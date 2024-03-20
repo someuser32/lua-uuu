@@ -1,0 +1,313 @@
+local class = require("lib/middleclass")
+
+require("lib/lib")
+
+local ScriptAPI = require("lib/script")()
+
+local ChargeBreaker = class("ChargeBreaker")
+
+function ChargeBreaker:initialize()
+	self.path = {"Utility", "Charge Breaker"}
+
+	self.break_abilities = {
+		{"item_sheepstick", "panorama/images/items/sheepstick_png.vtex_c", true, true},
+		{"item_cyclone", "panorama/images/items/cyclone_png.vtex_c", true, true},
+		{"item_abyssal_blade", "panorama/images/items/abyssal_blade_png.vtex_c", true, true},
+		{"item_wind_waker", "panorama/images/items/wind_waker_png.vtex_c", false, true},
+		{"item_force_staff", "panorama/images/items/force_staff_png.vtex_c", false, true},
+		{"item_hurricane_pike", "panorama/images/items/hurricane_pike_png.vtex_c", false, true},
+		{"item_force_boots", "panorama/images/items/force_boots_png.vtex_c", false, true},
+		{"item_gungir", "panorama/images/items/gungir_png.vtex_c", false, true},
+		{"item_rod_of_atos", "panorama/images/items/rod_of_atos_png.vtex_c", false, true},
+		{"lion_voodoo", "panorama/images/spellicons/lion_voodoo_png.vtex_c", true, true},
+		{"shadow_shaman_voodoo", "panorama/images/spellicons/shadow_shaman_voodoo_png.vtex_c", true, true},
+		{"rubick_telekinesis", "panorama/images/spellicons/rubick_telekinesis_png.vtex_c", true, true},
+		{"dragon_knight_dragon_tail", "panorama/images/spellicons/dragon_knight_dragon_tail_png.vtex_c", true, true},
+		{"invoker_cold_snap", "panorama/images/spellicons/invoker_cold_snap_png.vtex_c", true, true},
+		{"disruptor_glimpse", "panorama/images/spellicons/disruptor_glimpse_png.vtex_c", true, true},
+		{"obsidian_destroyer_astral_imprisonment", "panorama/images/spellicons/obsidian_destroyer_astral_imprisonment_png.vtex_c", true, true},
+		{"lich_sinister_gaze", "panorama/images/spellicons/lich_sinister_gaze_png.vtex_c", true, true},
+		{"bane_nightmare", "panorama/images/spellicons/bane_nightmare_png.vtex_c", false, true},
+		{"shadow_demon_disruption", "panorama/images/spellicons/shadow_demon_disruption_png.vtex_c", true, true},
+		{"enigma_malefice", "panorama/images/spellicons/enigma_malefice_png.vtex_c", true, true},
+		{"luna_lucent_beam", "panorama/images/spellicons/luna_lucent_beam_png.vtex_c", true, true},
+		{"marci_grapple", "panorama/images/spellicons/marci_grapple_png.vtex_c", true, true},
+		{"night_stalker_void", "panorama/images/spellicons/night_stalker_void_png.vtex_c", true, true},
+		{"zuus_lightning_bolt", "panorama/images/spellicons/zuus_lightning_bolt_png.vtex_c", true, true},
+		{"dark_seer_vacuum", "panorama/images/spellicons/dark_seer_vacuum_png.vtex_c", true, false},
+		{"earthshaker_fissure", "panorama/images/spellicons/earthshaker_fissure_png.vtex_c", true, false},
+		{"lion_impale", "panorama/images/spellicons/lion_impale_png.vtex_c", true, true},
+		{"monkey_king_boundless_strike", "panorama/images/spellicons/monkey_king_boundless_strike_png.vtex_c", true, false},
+		{"morphling_adaptive_strike_str", "panorama/images/spellicons/morphling_adaptive_strike_str_png.vtex_c", true, true},
+		{"nyx_assassin_impale", "panorama/images/spellicons/nyx_assassin_impale_png.vtex_c", true, false},
+		{"shadow_shaman_shackles", "panorama/images/spellicons/shadow_shaman_shackles_png.vtex_c", true, true},
+		{"tiny_avalanche", "panorama/images/spellicons/tiny_avalanche_png.vtex_c", true, false},
+		{"beastmaster_primal_roar", "panorama/images/spellicons/beastmaster_primal_roar_png.vtex_c", true, true},
+		{"bane_fiends_grip", "panorama/images/spellicons/bane_fiends_grip_png.vtex_c", true, true},
+		{"arc_warden_magnetic_field", "panorama/images/spellicons/arc_warden_magnetic_field_png.vtex_c", true, false},
+		{"drow_ranger_wave_of_silence", "panorama/images/spellicons/drow_ranger_wave_of_silence_png.vtex_c", true, false},
+		{"lone_druid_savage_roar", "panorama/images/spellicons/lone_druid_savage_roar_png.vtex_c", false, false},
+		{"mars_spear", "panorama/images/spellicons/mars_spear_png.vtex_c", true, false},
+		{"crystal_maiden_frostbite", "panorama/images/spellicons/crystal_maiden_frostbite_png.vtex_c", true, true},
+		{"abyssal_underlord_pit_of_malice", "panorama/images/spellicons/abyssal_underlord_pit_of_malice_png.vtex_c", true, false},
+		{"windrunner_shackleshot", "panorama/images/spellicons/windrunner_shackleshot_png.vtex_c", true, true},
+	}
+
+	self.enemy_abilities = {
+		{"earthshaker_enchant_totem", "panorama/images/spellicons/earthshaker_enchant_totem_png.vtex_c", true, {"modifier_earthshaker_enchant_totem_leap"}, {}},
+		{"magnataur_skewer", "panorama/images/spellicons/magnataur_skewer_png.vtex_c", true, {"modifier_magnataur_skewer_movement"}, {speed="skewer_speed"}},
+		{"monkey_king_tree_dance", "panorama/images/spellicons/monkey_king_tree_dance_png.vtex_c", true, {"modifier_monkey_king_tree_dance_activity"}, {speed=1405}},
+		{"monkey_king_primal_spring", "panorama/images/spellicons/monkey_king_primal_spring_png.vtex_c", true, {"modifier_monkey_king_bounce_leap"}, {}},
+		{"pangolier_swashbuckle", "panorama/images/spellicons/pangolier_swashbuckle_png.vtex_c", true, {"modifier_pangolier_swashbuckle"}, {speed="dash_speed"}},
+		{"pangolier_shield_crash", "panorama/images/spellicons/pangolier_shield_crash_png.vtex_c", true, {"modifier_pangolier_shield_crash_jump"}, {
+			speed=function(ability)
+				return ability:GetLevelSpecialValueFor("jump_horizontal_distance")/ability:GetLevelSpecialValueForFloat("jump_duration")
+			end
+		}},
+		{"snapfire_firesnap_cookie", "panorama/images/spellicons/snapfire_firesnap_cookie_png.vtex_c", true, {"modifier_snapfire_firesnap_cookie_short_hop", "modifier_snapfire_firesnap_cookie_ally_flail_anim"}, {
+			speed=function(ability)
+				return ability:GetLevelSpecialValueFor("jump_horizontal_distance")/ability:GetLevelSpecialValueForFloat("jump_duration")
+			end
+		}},
+		{"techies_suicide", "panorama/images/spellicons/techies_suicide_png.vtex_c", true, {"modifier_techies_suicide_leap"}, {}},
+		{"wisp_tether", "panorama/images/spellicons/wisp_tether_png.vtex_c", true, {"modifier_wisp_tether"}, {speed="latch_speed"}},
+		{"mirana_leap", "panorama/images/spellicons/mirana_leap_png.vtex_c", true, {"modifier_mirana_leap"}, {speed="leap_speed"}},
+		{"phoenix_icarus_dive", "panorama/images/spellicons/phoenix_icarus_dive_png.vtex_c", true, {"modifier_phoenix_icarus_dive"}, {
+			speed=function(ability)
+				return ability:GetLevelSpecialValueFor("dash_length")/ability:GetLevelSpecialValueForFloat("dive_duration")
+			end
+		}},
+		{"slark_pounce", "panorama/images/spellicons/slark_pounce_png.vtex_c", true, {"modifier_slark_pounce"}, {speed="pounce_speed"}},
+		{"spirit_breaker_charge_of_darkness", "panorama/images/spellicons/spirit_breaker_charge_of_darkness_png.vtex_c", true, {"modifier_spirit_breaker_charge_of_darkness"}, {
+			speed=function(ability)
+				return ability:GetCaster():GetMoveSpeed()
+			end
+		}},
+		{"shredder_timber_chain", "panorama/images/spellicons/shredder_timber_chain_png.vtex_c", true, {"modifier_shredder_timber_chain"}, {speed="speed"}},
+		{"ursa_earthshock", "panorama/images/spellicons/ursa_earthshock_png.vtex_c", false, {"modifier_ursa_earthshock_move"}, {
+			speed=function(ability)
+				return ability:GetLevelSpecialValueFor("hop_distance")/ability:GetLevelSpecialValueForFloat("hop_duration")
+			end
+		}},
+		{"primal_beast_onslaught", "panorama/images/spellicons/primal_beast_onslaught_png.vtex_c", true, {"modifier_primal_beast_onslaught_windup", "modifier_primal_beast_onslaught_movement_adjustable"}, {speed="charge_speed"}},
+	}
+
+	self.invis_options = {
+		"Always",
+		"If visible",
+		"If true sighted",
+		"Never",
+	}
+
+	self.anti_overwatch_camera_options = {
+		"Always",
+		"If controlled unit near camera",
+		"If controlled unit and ally near camera",
+		"If caster near camera",
+	}
+
+	self.loaded_icons = {}
+
+	for _, break_ability in pairs(self.break_abilities) do
+		self.loaded_icons[break_ability[1]] = Renderer.LoadImage(break_ability[2])
+	end
+
+	for _, enemy_ability in pairs(self.enemy_abilities) do
+		self.loaded_icons[enemy_ability[1]] = Renderer.LoadImage(enemy_ability[2])
+	end
+
+	self.charge_breaker_enable = UI_LIB:create_bool(self.path, "Enable", false)
+
+	self.charge_breaker_break_abilities_multiselect = UI_LIB:create_multiselect(self.path, "Your abilities", table.map(self.break_abilities, function(_, t) return {t[1], t[2], t[3]} end), false)
+
+	self.charge_breaker_enemy_abilities_multiselect = UI_LIB:create_multiselect(self.path, "Enemy abilities", table.map(self.enemy_abilities, function(_, t) return {t[1], t[2], t[3]} end), false)
+
+	self.charge_breaker_linken_breaker = LinkenBreaker:create_option(table.combine(self.path, "Settings"), nil, nil, true)
+	self.charge_breaker_spell_reflect = SpellReflect:create_option(table.combine(self.path, "Settings"))
+
+	self.charge_breaker_allies = UI_LIB:create_onlyallymultiselect(self.path, "Allies", false, false, true)
+
+	self.charge_breaker_invis_options = UI_LIB:create_combo(table.combine(self.path, {"Settings", "Conditions"}), "Invisibility", self.invis_options, 2)
+	self.charge_breaker_invis_options:set_icon("~/MenuIcons/eye_dashed.png")
+	self.charge_breaker_ignore_channelling = UI_LIB:create_bool(table.combine(self.path, {"Settings", "Conditions"}), "Interrupt channelings", false)
+	self.charge_breaker_ignore_channelling:set_icon("~/MenuIcons/open_book.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, {"Settings", "Conditions"}), "~/MenuIcons/Lists/true_false.png")
+
+	self.auto_disabler_anti_overwatch_camera = UI_LIB:create_combo(table.combine(self.path, {"Settings", "Anti-Overwatch"}), "Camera options", self.anti_overwatch_camera_options, 4)
+	self.auto_disabler_anti_overwatch_camera:set_tip("[Legit mode]\n[Always] - always disable enemy\n[If controlled unit near camera] - if your controlled unit (Tempest Double etc) near server camera pos\n[If controlled unit and ally near camera] - if your controlled unit (Tempest Double etc) and ally near server camera pos\n[If caster near camera] - if your any caster (including you, controlling units and allies) near server camera pos\n- Changing value from \"If caster near camera\" might be not-legit for Overwatch\n[OVERWATCH RISK]")
+	self.auto_disabler_anti_overwatch_camera:set_icon("~/MenuIcons/binoculars_filled.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, {"Settings", "Anti-Overwatch"}), "~/MenuIcons/robot.png")
+
+	self.charge_breaker_notifications = UI_LIB:create_bool(table.combine(self.path, {"Settings"}), "Notification", true)
+	self.charge_breaker_notifications:set_icon("~/MenuIcons/Notifications/alarm.png")
+
+	UI_LIB:set_tab_icon(table.combine(self.path, "Settings"), "~/MenuIcons/utils_wheel.png")
+
+	UI_LIB:set_tab_icon(self.path, "~/MenuIcons/runer-silhouette-running-fast.png")
+
+	self.trigger_cache = {}
+
+	self.listeners = {}
+end
+
+function ChargeBreaker:IsEnabled()
+	return self.charge_breaker_enable:get_value()
+end
+
+function ChargeBreaker:OnUpdate()
+	if not self:IsEnabled() then return end
+	local tick = self:GetTick()
+	if tick % 2 == 0 then
+		for _, enemy in pairs(CHeroes.GetEnemies()) do
+			local entindex = enemy:GetIndex()
+			if self.trigger_cache[entindex] ~= true then
+				for _, enemy_ability in pairs(self.enemy_abilities) do
+					if self.charge_breaker_enemy_abilities_multiselect:is_selected(enemy_ability[1]) then
+						for _, modifier_name in pairs(enemy_ability[4]) do
+							if enemy:HasModifier(modifier_name) then
+								self:Trigger(enemy, enemy_ability)
+								return
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function ChargeBreaker:CanDisableConsideringCamera(caster, enemy)
+	local camera_behavior = self.auto_disabler_anti_overwatch_camera:get_selected_index()
+	local caster_position = caster:GetAbsOrigin()
+	local enemy_position = enemy:GetAbsOrigin()
+	local is_local_hero = CHero.GetLocal() == caster
+	local is_ally = CPlayer.GetLocal():GetPlayerID() ~= caster:GetPlayerID()
+	local camera_distance = 1200
+	local camera_legit_threshold = 250
+	local camera_position = Humanizer.GetServerCameraPos()
+	if camera_behavior == 1 then
+		return true
+	elseif camera_behavior == 2 then
+		if is_local_hero or is_ally then
+			return true
+		end
+		return Humanizer.IsInServerCameraBounds(caster_position) or Humanizer.IsInServerCameraBounds(enemy_position)
+				or ((camera_position - caster_position):Length2D() < camera_distance + camera_legit_threshold) or ((camera_position - enemy_position):Length2D() < camera_distance + 300)
+	elseif camera_behavior == 3 then
+		if is_local_hero then
+			return true
+		end
+		return Humanizer.IsInServerCameraBounds(caster_position) or Humanizer.IsInServerCameraBounds(enemy_position)
+				or ((camera_position - caster_position):Length2D() < camera_distance + camera_legit_threshold) or ((camera_position - enemy_position):Length2D() < camera_distance + 300)
+	elseif camera_behavior == 4 then
+		return Humanizer.IsInServerCameraBounds(caster_position) or Humanizer.IsInServerCameraBounds(enemy_position)
+				or ((camera_position - caster_position):Length2D() < camera_distance + camera_legit_threshold) or ((camera_position - enemy_position):Length2D() < camera_distance + 300)
+	end
+	return true
+end
+
+function ChargeBreaker:GetUsableAbilitiesToDisable(hero, enemy_ability, enemy)
+	if not self:CanDisableConsideringCamera(hero, enemy) then
+		return {}
+	end
+	if not self.charge_breaker_ignore_channelling:get_value() and hero:IsChannellingAbility() then
+		return {}
+	end
+	if hero:IsInvisible() then
+		local invis_option = self.charge_breaker_invis_options:get_selected_index()
+		if invis_option == 2 then
+			if not hero:IsVisibleToEnemies() then
+				return {}
+			end
+		elseif invis_option == 3 then
+			if not hero:IsTrueSight() then
+				return {}
+			end
+		elseif invis_option == 4 then
+			return {}
+		end
+	end
+	local usable_abilities = {}
+	local distance = (enemy:GetAbsOrigin() - hero:GetAbsOrigin()):Length2D()
+	local is_enemy_bkb = enemy:IsDebuffImmune()
+	for _, ability_info in pairs(self.break_abilities) do
+		local ability_name = ability_info[1]
+		if self.charge_breaker_break_abilities_multiselect:is_selected(ability_name) then
+			local ability = string.startswith(ability_name, "item_") and hero:GetItemByName(ability_name, 2) or hero:GetAbility(ability_name)
+			if ability ~= nil and ability:CanCast() and (not is_enemy_bkb or ability:PiercesBKB()) then
+				if not ability_info[4] or not enemy:IsAbsorbsSpells() then
+					local cast_range = ability:GetCastRange()
+					if cast_range == 0 then
+						cast_range = ability:GetRadius()
+					end
+					if cast_range >= distance then
+						if not ability_info[4] or (LinkenBreaker:can_use(hero, enemy, self.charge_breaker_linken_breaker, nil, ability_name) and SpellReflect:can_use(ability, enemy, self.charge_breaker_spell_reflect)) then
+							table.insert(usable_abilities, ability)
+						end
+					end
+				end
+			end
+		end
+	end
+	return usable_abilities
+end
+
+function ChargeBreaker:Trigger(enemy, enemy_ability_info)
+	if not self:IsEnabled() then return end
+	local entindex = enemy:GetIndex()
+	self.trigger_cache[entindex] = true
+	local localHero = CHero.GetLocal()
+	local localAbilities = self:GetUsableAbilitiesToDisable(localHero, ability, enemy)
+	if localAbilities[1] ~= nil then
+		return self:UseAbility(localAbilities[1], enemy, enemy_ability_info[1])
+	end
+	local localPlayerID = CPlayer.GetLocal():GetPlayerID()
+	for _, hero in pairs(CHeroes.GetAlliesOnly()) do
+		if hero:GetPlayerID() == localPlayerID or (hero:IsControllableByPlayer(localPlayerID) and self.charge_breaker_allies:is_selected(hero:GetUnitName())) then
+			local abilities = self:GetUsableAbilitiesToDisable(hero, ability, enemy)
+			if abilities[1] ~= nil then
+				return self:UseAbility(abilities[1], enemy, enemy_ability_info[1])
+			end
+		end
+	end
+	self.trigger_cache[entindex] = nil
+end
+
+function ChargeBreaker:UseAbility(ability, enemy, enemy_ability)
+	local hero = ability:GetCaster()
+	local ability_name = ability:GetName()
+	local is_targeted = ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET)
+	local entindex = enemy:GetIndex()
+	local callback = function(self)
+		return function(isLinkenFree)
+			if not isLinkenFree then return end
+			if ability:IsLinearProjectile() then
+				print("test")
+			end
+			ability:Cast(enemy)
+			self:SendNotification(ability_name, enemy_ability)
+			timer.Barebones(ability:GetCastPoint() + hero:GetTimeToFacePosition(enemy:GetAbsOrigin()) + GetPingDelay() + 0.3, function(self)
+				self.trigger_cache[entindex] = nil
+			end, self)
+		end
+	end
+	if hero:IsChannellingAbility() then
+		hero:Stop()
+	end
+	if is_targeted then
+		LinkenBreaker:break_linken(hero, enemy, self.charge_breaker_linken_breaker, nil, ability_name, callback(self))
+	else
+		callback(self)(true)
+	end
+end
+
+function ChargeBreaker:SendNotification(break_ability, enemy_ability)
+	if self.charge_breaker_notifications:get_value() then
+		Renderer.DrawCenteredNotification("{&"..self.loaded_icons[enemy_ability].."} {#FFFFFF}break by {&"..self.loaded_icons[break_ability].."}", 2)
+	end
+end
+
+
+ScriptAPI.Init(ChargeBreaker)
+
+return ScriptAPI

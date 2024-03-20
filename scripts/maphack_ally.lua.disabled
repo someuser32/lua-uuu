@@ -1,0 +1,64 @@
+local class = require("lib/middleclass")
+
+require("lib/lib")
+
+local ScriptAPI = require("lib/script")()
+
+local MaphackAlly = class("MaphackAlly")
+
+function MaphackAlly:initialize()
+	self.path = {"Info Screen", "Map Hack (Allies)"}
+
+	self.maphack_ally_enable = UI_LIB:create_bool(self.path, "Enable", false)
+
+	self.maphack_ally_teleports_minimap = UI_LIB:create_bool(table.combine(self.path, "Teleports"), "Draw Arrows on Minimap", false)
+	self.maphack_ally_teleports_minimap:set_icon("~/MenuIcons/line_dashed.png")
+	self.maphack_ally_teleports_chat = UI_LIB:create_bool(table.combine(self.path, "Teleports"), "Chat message", false)
+	self.maphack_ally_teleports_chat:set_icon("~/MenuIcons/chat.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, "Teleports"), "~/MenuIcons/Dota/tp_scroll.png")
+
+	self.maphack_ally_jungle_minimap_minimap = UI_LIB:create_bool(table.combine(self.path, "Jungle MapHack"), "Draw corners on Minimap", false)
+	self.maphack_ally_jungle_minimap_minimap:set_icon("~/MenuIcons/line_dashed.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, "Jungle MapHack"), "~/MenuIcons/forest.png")
+
+	self.maphack_ally_hidden_spells_world = UI_LIB:create_bool(table.combine(self.path, "Hidden Spells"), "Ping", false)
+	self.maphack_ally_hidden_spells_world:set_icon("~/MenuIcons/google_maps.png")
+	self.maphack_ally_hidden_spells_chat = UI_LIB:create_bool(table.combine(self.path, "Hidden Spells"), "Chat message", false)
+	self.maphack_ally_hidden_spells_chat:set_icon("~/MenuIcons/chat.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, "Hidden Spells"), "~/MenuIcons/eye_dashed.png")
+
+	self.maphack_ally_roshan_chat = UI_LIB:create_bool(table.combine(self.path, "Roshan"), "Chat message", false)
+	self.maphack_ally_roshan_chat:set_icon("~/MenuIcons/chat.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, "Roshan"), "~/MenuIcons/Dota/roshan_icon_v2.png")
+
+	self.maphack_ally_vbe_chat = UI_LIB:create_bool(table.combine(self.path, "Visible by Enemy"), "Chat message (VBE)", false)
+	self.maphack_ally_vbe_chat:set_icon("~/MenuIcons/chat.png")
+	self.maphack_ally_vbe_sentry_chat = UI_LIB:create_bool(table.combine(self.path, "Visible by Enemy"), "Chat message (True Sight)", false)
+	self.maphack_ally_vbe_sentry_chat:set_icon("~/MenuIcons/chat.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, "Visible by Enemy"), "~/MenuIcons/Notifications/eye_search.png")
+
+	self.maphack_ally_chat_timings = UI_LIB:create_bool(table.combine(self.path, "Chat timings"), "Enable", false)
+	self.maphack_ally_chat_timings_interval = UI_LIB:create_slider(table.combine(self.path, "Chat timings"), "Interval", 5, 60, 20)
+	self.maphack_ally_chat_timings_interval:set_icon("~/MenuIcons/Time/timer_def.png")
+	UI_LIB:set_tab_icon(table.combine(self.path, "Chat timings"), "~/MenuIcons/text_panel.png")
+
+	UI_LIB:set_tab_icon(self.path, "~/MenuIcons/monitoring.png")
+
+	self.particles = {}
+
+	self.listeners = {}
+end
+
+function MaphackAlly:IsEnabled()
+	return self.maphack_ally_enable:get_value()
+end
+
+function MaphackAlly:OnParticleCreate(particle)
+end
+
+function MaphackAlly:OnParticleUpdate(particle)
+end
+
+ScriptAPI.Init(MaphackAlly)
+
+return ScriptAPI
