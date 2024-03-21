@@ -53,8 +53,8 @@ function UILib:CreateMultiselect(whereAt, name, itemsTable, singleSelectMode)
 	return option
 end
 
-function UILib:CreateSlider(whereAt, name, min, max, default)
-	local option = UILibOptionSlider:new(parseWhereAt(whereAt), name, min, max, default)
+function UILib:CreateSlider(whereAt, name, min, max, default, force_float)
+	local option = UILibOptionSlider:new(parseWhereAt(whereAt), name, min, max, default, force_float)
 	option:SetIcon("~/MenuIcons/edit.png")
 	return option
 end

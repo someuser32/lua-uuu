@@ -45,12 +45,23 @@ function CPlayer.static:GetLocalID()
 	return self:GetLocal():GetPlayerID()
 end
 
+function CPlayer.static:AddSelectedUnit(unit)
+	return self:StaticAPICall("AddSelectedUnit", Player.AddSelectedUnit, self:GetLocal(), unit)
+end
+
 function CPlayer.static:SetSelectedUnit(unit)
+	if unit.ent == nil and type(unit) == "table" then
+		self:SetSelectedUnit(unit[1])
+		for _, select_unit in pairs(unit) do
+			self:AddSelectedUnit(select_unit)
+		end
+		return
+	end
 	return CEngine:RunScript("GameUI.SelectUnit("..tostring(unit:GetIndex())..", false)")
 end
 
 function CPlayer.static:DeselectUnit(unit)
-	local selected_units = self:GetLocal():GetSelectedUnits()
+	local selected_units = self:GetSelectedUnits()
 	local initial_selected = false
 	for _, selected_unit in pairs(selected_units) do
 		if selected_unit ~= unit then
@@ -58,10 +69,14 @@ function CPlayer.static:DeselectUnit(unit)
 				self:SetSelectedUnit(selected_unit)
 				initial_selected = true
 			else
-				self:GetLocal():AddSelectedUnit(selected_unit)
+				self:AddSelectedUnit(selected_unit)
 			end
 		end
 	end
+end
+
+function CPlayer.static:GetSelectedUnits()
+	return self:StaticAPICall("GetSelectedUnits", Player.GetSelectedUnits, self:GetLocal())
 end
 
 _Classes_Inherite({"Player", "Entity"}, CPlayer)

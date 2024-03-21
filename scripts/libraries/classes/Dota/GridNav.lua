@@ -13,6 +13,10 @@ function CGridNav.static:GetPathLength(origin, target, ignore_trees)
 	return distance
 end
 
+function CGridNav.static:GetPathDifficult(origin, target, ignore_trees)
+	return #self:BuildPath(origin, target, ignore_trees ~= nil and ({ignore_trees} or {true})[1])
+end
+
 _Classes_Inherite({"GridNav"}, CGridNav)
 
 return CGridNav

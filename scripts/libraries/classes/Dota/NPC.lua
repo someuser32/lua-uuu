@@ -218,7 +218,7 @@ function CNPC:MoveToInterpolated(position, rangeStart, rangeStepStart, rangeStep
 end
 
 function CNPC:MoveTo(position, queue, showeffects, pushtocallback)
-	return CPlayer:GetLocal():PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, position, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, self, queue ~= nil and ({queue} or {false})[1], showeffects ~= nil and ({showeffects} or {false})[1], pushtocallback ~= nil and ({pushtocallback} or {true})[1])
+	return CPlayer:GetLocal():PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, position, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, self, (queue ~= nil and {queue} or {false})[1], (showeffects ~= nil and {showeffects} or {false})[1], (pushtocallback ~= nil and {pushtocallback} or {true})[1])
 end
 
 function CNPC:Stop()
@@ -230,7 +230,7 @@ function CNPC:PickupLotus(lotus_pool, queue, showeffects, pushtocallback)
 	if ability == nil then
 		return
 	end
-	return ability:Cast(lotus_pool, queue ~= nil and ({queue} or {false})[1], showeffects ~= nil and ({showeffects} or {false})[1], pushtocallback ~= nil and ({pushtocallback} or {true})[1])
+	return ability:Cast(lotus_pool, (queue ~= nil and {queue} or {false})[1], (showeffects ~= nil and {showeffects} or {false})[1], (pushtocallback ~= nil and {pushtocallback} or {true})[1])
 end
 
 function CNPC:GetControllableUnits(position, radius, local_priority)
