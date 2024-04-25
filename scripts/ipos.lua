@@ -36,7 +36,24 @@ function IPos:initialize()
 	}
 
 	self.ward_positions = {
-		-- radiant
+		-- radiant camps
+        Vector(-2434.02, -4006.03, 256),
+        Vector(-385.831, -1942.04, 256),
+		Vector(140, -1942.04, 256),
+        Vector(771.463, -3901.92, 256),
+        Vector(3250.42, -2955, 128),
+        Vector(4813.76, -3505.17, 128),
+        Vector(3334.48, -5761.97, 128),
+        Vector(4441.18, -7034.26, 128),
+        Vector(3781.09, -8743.02, 128),
+        Vector(-498.742, -7741.85, 0),
+        Vector(-8765.33, 432.869, 257.958),
+        Vector(-4916.79, 187.949, 256),
+        Vector(-4139.94, 1290.67, 256),
+        Vector(-2429.15, -8712.56, 256),
+        Vector(1967.26, -8792.65, 128),
+        Vector(-3499.83, 604.119, 256),
+		-- dire camps
 		Vector(-2740.5, 3322.12, 256),
         Vector(-1983.23, 3321.57, 256),
         Vector(-3206.1, 4500.16, 128),
@@ -53,22 +70,6 @@ function IPos:initialize()
         Vector(3003.78, -1528.9, 256),
         Vector(3656.65, -1452.33, 256),
         Vector(8724.8, -767.378, 256),
-		-- dire
-        Vector(-2434.02, -4006.03, 256),
-        Vector(-385.831, -1942.04, 256),
-        Vector(771.463, -3901.92, 256),
-        Vector(3250.42, -2955, 128),
-        Vector(4813.76, -3505.17, 128),
-        Vector(3334.48, -5761.97, 128),
-        Vector(4441.18, -7034.26, 128),
-        Vector(3781.09, -8743.02, 128),
-        Vector(-498.742, -7741.85, 0),
-        Vector(-8765.33, 432.869, 257.958),
-        Vector(-4916.79, 187.949, 256),
-        Vector(-4139.94, 1290.67, 256),
-        Vector(-2429.15, -8712.56, 256),
-        Vector(1967.26, -8792.65, 128),
-        Vector(-3499.83, 604.119, 256),
 	}
 
 	self.circle_radius = 10
@@ -90,10 +91,10 @@ end
 
 function IPos:OnDraw()
 	if not self.enable:Get() then return end
+	-- print(CInput:GetWorldCursorPos())
 	local is_key_down = CInput:IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
 	local active_ability = CPlayer:GetActiveAbility()
 	local cx, cy = CInput:GetCursorPos()
-	local cursor_pos = CInput:GetWorldCursorPos()
 	if self:ShouldDraw() then
 		for _, position in pairs(self.positions) do
 			local x, y, visible = CRenderer:WorldToScreen(position)
