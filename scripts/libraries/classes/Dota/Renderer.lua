@@ -32,6 +32,19 @@ function CRenderer.static:GetOrLoadImage(path)
 	return image
 end
 
+function CRenderer.static:DrawOutlineRectCentered(x, y, w, h)
+	return self:StaticAPICall("DrawOutlineRect", Renderer.DrawOutlineRect, x-w/2, y-h/2, w, h)
+end
+
+function CRenderer.static:DrawFilledRectCentered(x, y, w, h)
+	return self:StaticAPICall("DrawFilledRect", Renderer.DrawFilledRect, x-w/2, y-h/2, w, h)
+end
+
+function CRenderer.static:DrawTextCentered(font, x, y, text)
+	local w, h = CRenderer:GetTextSize(font, text)
+	return self:StaticAPICall("DrawText", Renderer.DrawText, font, x - w/2, y - h/2, text)
+end
+
 _Classes_Inherite({"Renderer"}, CRenderer)
 
 return CRenderer

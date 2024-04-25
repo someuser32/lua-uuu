@@ -272,7 +272,7 @@ function TreeDestroyerExtended:OnParticleCreate(particle)
 	end
 	if owner == nil or owner:GetTeamNum() == CPlayer:GetLocalTeam() then return end
 	if particle["entity_id"] ~= nil and particle["entity_id"] ~= -1 then
-		local ent = CEntity:new(particle["entity_id"])
+		local ent = CEntity:Get(particle["entity_id"])
 		if ent:IsEntity() then
 			table.insert(trees, ent)
 		end
