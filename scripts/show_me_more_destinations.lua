@@ -220,6 +220,7 @@ function ShowMeMoreDestinations:OnEntityCreate(entity)
 	if ent:IsNPC() then
 		local npc = CNPC:new(entity)
 		Timers:CreateTimer(0.01, function()
+			if npc:GetTeamNum() == CPlayer:GetLocalTeam() then return end
 			if npc:GetUnitName() == "npc_dota_techies_mines" then
 				self.sticky_mine = npc
 				self.last_pos = npc:GetAbsOrigin()

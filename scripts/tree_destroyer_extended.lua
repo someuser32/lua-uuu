@@ -54,6 +54,7 @@ function TreeDestroyerExtended:initialize()
 		"Away from enemies or backward",
 	}
 
+	self.furion_sprout_count = 8
 	self.monkey_king_tree_offset_z = 250
 
 	self.tree_destroyer_enable = UILib:CreateCheckbox(self.path, "Enable", false)
@@ -374,7 +375,7 @@ function TreeDestroyerExtended:TriggerDestroyTrees(entities, position, tree_type
 		if (unit == local_hero or self.tree_destroyer_cut_targets[tree_type.."_allies"]:IsSelected(unit:GetUnitName())) and ((self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble())) then
 			if Conditions:CanUse(unit, self.conditions_invis, self.conditions_channeling) then
 				if tree_type == "furion_sprout" then
-					if distance < 75 and not unit:HasFlying() then
+					if self:IsInsideFurionSprouts(unit, position) and not unit:CanPathThroughTrees() then
 						if self:DestroyTrees(entities, unit, tree_type, owner) then
 							return true
 						end
@@ -489,6 +490,16 @@ function TreeDestroyerExtended:SendNotification(destroy_ability, tree_type, owne
 	if sound ~= nil then
 		CEngine:PlaySound(sound)
 	end
+end
+
+function TreeDestroyerExtended:IsInsideFurionSprouts(hero, center)
+	local heroPos = hero:GetAbsOrigin()
+	local sprouts = table.values(table.filter(CTempTree:FindInRadius(center, 150+64), function(_, tree) return math.abs(150-(tree:GetAbsOrigin()-center):Length2D()) < 5 end))
+	local trees = CTempTree:FindInRadius(heroPos, 150+128)
+	if #trees < self.furion_sprout_count or #sprouts < self.furion_sprout_count then
+		return false
+	end
+	return table.all(table.map(sprouts, function(_, sprout) return table.contains(trees, sprout) end))
 end
 
 function TreeDestroyerExtended:GetBestTreeForFurionSprout(entities, hero)

@@ -1,0 +1,384 @@
+{
+   W3CORE                          	= table: 0000026F76B28F60 (table)
+   {
+      OnUpdate                        	= function@0000026F76B46E40() (function)
+      ETHEREAL_PROJECTILE             	= function@0000026F76B2A120(target) (function)
+      GET_TARGET                      	= function@0000026F76AD0C10(sources, source_team, mode, selector_range, max_range_to_entity) (function)
+      GET_ROOT_TIME                   	= function@0000026F76B297A0(target, type) (function)
+      GET_DISABLE_TIME                	= function@0000026F76B28460(target, type) (function)
+      CAN_INTERACT                    	= function@0000026F76AD09A0(source, target, type, ability, mana, is_magic, extra1) (function)
+      NEED_WAIT_ETHEREAL              	= function@0000026F76AD1450(target) (function)
+      GET_ORCHID_TIME                 	= function@0000026F76AD0BE0(target) (function)
+      DrawTextCentered                	= function@0000026F76AD1480(p1, p2, p3, p4) (function)
+      GET_NULLIFIER_TIME              	= function@0000026F76B29B60(target, type) (function)
+      FindFacingAngle                 	= function@0000026F76AD0EE0(source, position) (function)
+      MAX_N                           	= function@0000026F76AD0DF0(table) (function)
+      GET_HEX_TIME                    	= function@0000026F76AD1420(target) (function)
+      OnProjectile                    	= function@0000026F76B47A70(projectile) (function)
+      GAME_TIME                       	= 0 (number)
+      SCRIPTS                         	= table: 0000026F76B28E60 (table)
+      {
+      }
+   }
+   Statistics                      	= table: 0000026F6AA09520 (table)
+   {
+      SendData                        	= function@0000261F9DF8F2F0(...) (function)
+      AddLog                          	= function@0000261F9DF8F2F0(...) (function)
+   }
+   Turn_on_extra                   	= function@0000026F5B02F290() (function)
+   DODGING_SLEEP                   	= 0 (number)
+   MainNeedUseSoon                 	= function@0000026F76AAB870(disable_time, root_time, silence_time) (function)
+   HeroesCore                      	= table: 0000026F768EBBB0 (table)
+   {
+      AddMenuIcon                     	= function@0000026F76B22460(whereAt, fileName) (function)
+      OnFrame                         	= function@0000026E17D83120(self) (function)
+      OnGameEnd                       	= function@0000026F76B27360(self) (function)
+      GetDormantTime                  	= function@0000026F76AD7120(id) (function)
+      BoolToInt                       	= function@0000026F76966290(bool) (function)
+      AddButtonOption                 	= function@0000026F76B224A0(whereAt, name, callback) (function)
+      GetMagicDamageOn                	= function@0000026F76AD7390(damage, target, timeoffset) (function)
+      GetDebuffImmuneDuration         	= function@0000026F76B565C0(npc) (function)
+      IsTSelectorParticle             	= function@0000026F76AD65B0() (function)
+      OnParticleCreate                	= function@0000026F76B279A0(self) (function)
+      IsTSelectorMove                 	= function@0000026F76AD68E0() (function)
+      CacheMultiselect                	= function@0000026F769666B0(table, old, new) (function)
+      GetMoveSpeed                    	= function@0000026F76B23960(npc) (function)
+      MaxN                            	= function@0000026F769662F0(t) (function)
+      CanInteract                     	= function@0000026F76AD7030(npc) (function)
+      AddOptionCombo                  	= function@0000026F76B56CF0(whereAt, name, items, defaultIndex) (function)
+      AddOptionInputText              	= function@0000026F76B56A70(whereAt, name, defaultText) (function)
+      AddOptionBool                   	= function@0000026F76B56250(whereAt, name, defaultBool) (function)
+      FindFace                        	= function@0000026F76B23B60(entity, target_position) (function)
+      CanUseAbilities                 	= function@0000026F76AD6CD0(npc) (function)
+      Orbwalker                       	= function@0000026F76B47980(source, target, settings) (function)
+      GetHUDInfo                      	= function@0000026F76B478E0(abilities_count) (function)
+      IsAttackEvent                   	= function@0000026F76ACED50(animation_activity) (function)
+      UnitsInfo                       	= table: 0000026F624BD070 (table)
+      {
+      }
+      OnModifierCreate                	= function@0000026F76B46C10(self, mod) (function)
+      GetPredictionPos                	= function@0000026F76AD6F10(npc, time) (function)
+      IsLocalHeroInHUD                	= function@0000026F76ACF5F0() (function)
+      GetItemsSelector                	= function@0000026F76B22AE0(num) (function)
+      GetHexDuration                  	= function@0000026F76AD69D0(npc) (function)
+      OnParticleUpdateEntity          	= function@0000026F76ACEE70(self) (function)
+      Sleeps                          	= table: 0000026F76B1E050 (table)
+      {
+      }
+      OnUpdate                        	= function@0000026F4CE8F940(self) (function)
+      GetTSelectorRange               	= function@0000026F76AD5DA0() (function)
+      AddOptionSliderFloat            	= function@0000026F76B56020(whereAt, name, min, max, defaultFloat) (function)
+      OnParticleUpdate                	= function@0000026F76B27A20(self) (function)
+      OnModifierDestroy               	= function@0000026F76B27520(self, mod) (function)
+      AddOptionSlider                 	= function@0000026F76B56750(whereAt, name, min, max, defaultInt) (function)
+      UnitsCombo                      	= function@0000026F76B45B80(units, target, last_index) (function)
+      IsLinkensProtected              	= function@0000026F76AD6DF0(npc) (function)
+      AddKeyOption                    	= function@0000026F76B56B10(whereAt, name, defaultButton) (function)
+      GetSleep                        	= function@0000026F76966620(sleep) (function)
+      GetAttackRange                  	= function@0000026F76AD6940(npc) (function)
+      TELEPORT_TIME                   	= table: 0000026F76B1DA10 (table)
+      {
+      }
+      IntToBool                       	= function@0000026F769662C0(int) (function)
+      UseCurrentPath                  	= function@0000026F76B223E0(bool) (function)
+      IsInteractable                  	= function@0000026F76AD6E80(npc) (function)
+      OnEntityDestroy                 	= function@0000026F76B273E0(self) (function)
+      IsAttackable                    	= function@0000026F76AD6DC0(npc) (function)
+      CanAttack                       	= function@0000026F76B560C0(source, target, ghost_attack_check) (function)
+      BlinkUsage                      	= function@0000026F76ACEE10(source, target, settings_table) (function)
+      GetBreakerSelector              	= function@0000026F76B22D60() (function)
+      CanMove                         	= function@0000026F76AD6D90(npc) (function)
+      GetPerpendicular                	= function@0000026F769668C0(line_start_point, line_direction_vector, position_point) (function)
+      GetBuffs                        	= function@0000026F76B25760(npc) (function)
+      WaitBreakLinken                 	= 0 (number)
+   }
+   OnCustomOptionChange            	= function@0000026F68821F30(option_id, new_value) (function)
+   DODGING_MOVE_SLEEP              	= 0 (number)
+   HCCurrentCheck                  	= true (boolean)
+   LIB_UI                          	= table: 0000026F76B34720 (table)
+   {
+      get                             	= function@0000026E17D76520(hero_name) (function)
+   }
+   DODGING_MORPH_SLEEP             	= 0 (number)
+   LIB_HEROES_DATA                 	= table: 0000026F76B30E60 (table)
+   {
+      version_date                    	= "hero_lib - [13.03.2024 | 21:00] - " (string)
+      init_ability                    	= function@0000026F76B32AA0(ref) (function)
+      item_by_slot                    	= table: 0000026F76B30360 (table)
+      {
+         userdata: 0000026DE2721C00      	= table: 0000026F7703FA80 (table)
+         {
+            15                              	= table: 0000026F7703FBC0 (table)
+            {
+               ref                             	= userdata: 0000026C0BE81C00 (userdata)
+               name                            	= "item_tpscroll" (string)
+            }
+         }
+      }
+      entity_list                     	= table: 0000026F7703DE40 (array table)
+      [
+      ]
+      get_helpers                     	= function@0000026E17D84AA0() (function)
+      delay_call_list                 	= table: 0000026F76B30E20 (table)
+      {
+      }
+      tickcount                       	= 0 (number)
+      init_hero                       	= function@0000026F76B4B5D0(ref) (function)
+      heroes                          	= table: 0000026F7703D840 (array table)
+      [
+      ]
+      array_helpers                   	= table: 0000026F76B321E0 (table)
+      {
+         find                            	= function@0000026F76ACD130(array, el) (function)
+         combine                         	= function@0000026F76ACCE30(array, array2) (function)
+         clone                           	= function@0000026F76ACCEF0(array) (function)
+      }
+      enemies                         	= table: 0000026F7703D980 (table)
+      {
+      }
+      is_in_entity_list               	= table: 0000026F7703E100 (table)
+      {
+      }
+      update_funcs                    	= table: 0000026F76B30D60 (array table)
+      [
+         1                               	= function@0000026F30846970() (function)
+         2                               	= function@0000026F308383F0() (function)
+         3                               	= function@0000026F3BE4DA00() (function)
+      ]
+      unique_attack_range_func        	= table: 0000026F67FF9B60 (table)
+      {
+         npc_dota_hero_templar_assassin  	= function@0000026F680A30A0(func_target) (function)
+         npc_dota_hero_winter_wyvern     	= function@0000026F680A30D0(func_target) (function)
+         npc_dota_hero_dragon_knight     	= function@0000026F680A27D0(func_target) (function)
+         npc_dota_hero_zuus              	= function@0000026F680A2890(func_target) (function)
+         npc_dota_hero_earthshaker       	= function@0000026F680A2B00(func_target) (function)
+         npc_dota_hero_clinkz            	= function@0000026F680A2DD0(func_target) (function)
+         npc_dota_hero_dark_willow       	= function@0000026F680A2EC0(func_target) (function)
+         npc_dota_hero_nyx_assassin      	= function@0000026F680A2A40(func_target) (function)
+         npc_dota_hero_terrorblade       	= function@0000026F680A2B30(func_target) (function)
+         npc_dota_hero_tiny              	= function@0000026F680A3130(func_target) (function)
+         npc_dota_hero_sniper            	= function@0000026F680A2DA0(func_target) (function)
+         npc_dota_hero_ancient_apparition	= function@0000026F680A2BF0(func_target) (function)
+         npc_dota_hero_snapfire          	= function@0000026F680A3250(func_target) (function)
+         npc_dota_hero_troll_warlord     	= function@0000026F680A2E60(func_target) (function)
+         npc_dota_hero_jakiro            	= function@0000026F680A2CE0(func_target) (function)
+      }
+      unknown_npcs                    	= table: 0000026F7703E080 (array table)
+      [
+      ]
+      item                            	= table: 0000026F7703DF40 (table)
+      {
+         userdata: 0000026DE2721C00      	= table: 0000026F7703F980 (table)
+         {
+            item_tpscroll                   	= table: 0000026F7703FAC0 (table)
+            {
+               ref                             	= userdata: 0000026C0BE81C00 (userdata)
+               slot                            	= 15 (number)
+            }
+         }
+      }
+      unknown_heroes                  	= table: 0000026F7703D9C0 (array table)
+      [
+      ]
+      modifier_by_classname           	= table: 0000026F7703C8C0 (table)
+      {
+         npc_dota_hero_drow_ranger       	= table: 0000026F770402C0 (table)
+         {
+            modifier_fountain_aura_buff     	= userdata: 0000026C80FA1400 (userdata)
+         }
+      }
+      add_func_to_reload_variables    	= function@0000026F76ADCAC0(func) (function)
+      get                             	= function@0000026E17D84BC0(items_system_list, linkbreaker_list, ui) (function)
+      helpers                         	= table: 0000026F76B31360 (table)
+      {
+         predict_pos                     	= function@0000026F76B4B670(my_ent, target, max_delay_time, delay_time, projectile_speed, override_move_speed, need_debug) (function)
+         is_doomed                       	= function@0000026F76ACCC50(ent) (function)
+         tornado_duration                	= function@0000026F76B31D60(ent) (function)
+         mirror_shield                   	= function@0000026F76ACC9E0(ent) (function)
+         is_magic_immune                 	= function@0000026F76ACCA40(ent) (function)
+         special_hero_reduce_damage      	= function@0000026F76B32BA0(ent, damage, damage_type) (function)
+         aghanim                         	= function@0000026F76ACCAA0(ent) (function)
+         blink_to_mod                    	= table: 0000026F76B31F20 (table)
+         {
+            item_overwhelming_blink         	= "modifier_item_overwhelming_blink_debuff" (string)
+            item_swift_blink                	= "modifier_item_swift_blink_buff" (string)
+         }
+         generate_combinations_with_element	= function@0000026F76ACD3A0(input_list, element) (function)
+         stun_duration                   	= function@0000026F76B319E0(ent) (function)
+         point_in_aoe_skill_area         	= function@0000026F76B325A0(my_ent, target_pos, cast_pos, cast_range, radius, need_debug) (function)
+         find_best_point                 	= function@0000026F76B32EA0(my_pos, my_team, target, radius, time, cast_range, skip_self_check, is_teammates, include_illusion, include_creep, override_pos, need_debug) (function)
+         is_unselectable                 	= function@0000026F76ACC260(ent) (function)
+         is_disarmed                     	= function@0000026F76ACC620(ent) (function)
+         hero_damage_amp                 	= function@0000026F76ACC800(ent, damage) (function)
+         spec_armor                      	= function@0000026F76ACC770(damage, count) (function)
+         get_move_speed                  	= function@0000026F76B32A20(ent, disable_is_moving_check) (function)
+         can_mirror_ability              	= function@0000026F76B314A0(ent, include_mirror_shield) (function)
+         point_in_linear_skill_area      	= function@0000026F76B32820(my_ent, pos, cast_range, cast_pos, min_radius, max_radius, need_debug, override_start_pos) (function)
+         calculate_average_point         	= function@0000026F76ACCE60(positions) (function)
+         override_my_data                	= false (boolean)
+         is_untargetable                 	= function@0000026F76ACC110(ent) (function)
+         predict_pure_damage             	= function@0000026F76B32560(ent, caster, damage, time_offset, exort_ability, exort_count, manual_discord, manual_shiva) (function)
+         is_ghosted                      	= function@0000026F76B31D20(ent) (function)
+         scan_average_point              	= function@0000026F76B327A0(n, radius, my_team, array, time, min_count, allow_invul, allow_bkb, team_enum, need_debug) (function)
+         taunt_duration                  	= function@0000026F76B31AA0(ent) (function)
+         ghost_list                      	= table: 0000026F76B315E0 (array table)
+         [
+            1                               	= "modifier_ghost_state" (string)
+            2                               	= "modifier_item_ethereal_blade_ethereal" (string)
+            3                               	= "modifier_necrolyte_sadist_active" (string)
+            4                               	= "modifier_leshrac_decrepify" (string)
+            5                               	= "modifier_pugna_decrepify" (string)
+         ]
+         amplify                         	= function@0000026F76ACC6E0(ent) (function)
+         is_hexed                        	= function@0000026F76ACC2F0(ent) (function)
+         skill_cast_time                 	= function@0000026F76B31E20(skill_name) (function)
+         is_rooted                       	= function@0000026F76ACCB00(ent) (function)
+         generate_combinations           	= function@0000026F76ACD850(arr, k) (function)
+         is_no_hp_bar                    	= function@0000026F76ACC320(ent) (function)
+         is_invulnerable                 	= function@0000026F76ACC530(ent) (function)
+         dist_to                         	= function@0000026F76ACC500(vector_1, vector_2) (function)
+         is_untargetable_to_enemy        	= function@0000026F76ACC1D0(ent) (function)
+         find_average_point              	= function@0000026F76B324E0(my_ent, my_team, scan_radius, radius, time, min_count, allow_invul, allow_bkb, allow_meepo_clone, is_teammates, need_debug) (function)
+         astral_duration                 	= function@0000026F76B31620(ent, include_unsafe_mods) (function)
+         bkb_duration                    	= function@0000026F76B311A0(ent) (function)
+         math_round                      	= function@0000026F76ACC140(what, step) (function)
+         is_bkb                          	= function@0000026F76ACCAD0(ent) (function)
+         predict_magic_damage            	= function@0000026F76B32360(ent, caster, damage, time_offset, exort_ability, exort_count, manual_discord, manual_shiva, etherial) (function)
+         is_silenced                     	= function@0000026F76ACCC80(ent) (function)
+         root_duration                   	= function@0000026F76B31AE0(ent, disable_bkb_check) (function)
+         dist_to_2d                      	= function@0000026F76ACC920(vector_1, vector_2) (function)
+         blinks_type                     	= table: 0000026F76B320A0 (table)
+         {
+            item_blink                      	= 1 (number)
+            item_arcane_blink               	= 4 (number)
+            item_swift_blink                	= 3 (number)
+            item_overwhelming_blink         	= 2 (number)
+         }
+         shard                           	= function@0000026F76ACC8F0(ent) (function)
+         is_out_of_game                  	= function@0000026F76ACCCB0(ent) (function)
+         attributes                      	= table: 0000026F76B320E0 (table)
+         {
+            0                               	= function@0000261F9E1933A0(...) (function)
+            1                               	= function@0000261F9E193420(...) (function)
+            2                               	= function@0000261F9E1934A0(...) (function)
+            3                               	= function@0000026F76ACC440(ent) (function)
+         }
+         linken_sphere                   	= function@0000026F76ACC380(ent) (function)
+         is_taunted                      	= function@0000026F76ACC650(ent) (function)
+         ghost_duration                  	= function@0000026F76B317A0(ent) (function)
+         etherials                       	= function@0000026F76ACC560(ent, damage, timeoffset, need_multiplier) (function)
+         get_attack_range                	= function@0000026F76ACC9B0(func_target) (function)
+         delay_call                      	= function@0000026F76ACC170(delay, func) (function)
+         hex_duration                    	= function@0000026F76B316E0(ent) (function)
+         is_stunned                      	= function@0000026F76ACCA10(ent) (function)
+         closest_point_on_line           	= function@0000026F76ACCC20(start_point, end_point, point) (function)
+         modifier_duration               	= function@0000026F76B31DE0(ent, name) (function)
+         pma                             	= function@0000026F76B32B60(npc, self_buff, m_a) (function)
+         math_clamp                      	= function@0000026F76ACC7D0(val, min, max) (function)
+         attribute                       	= function@0000026F76B32120(ent) (function)
+         silence_duration                	= function@0000026F76B31BA0(ent) (function)
+         projectile_travel_time          	= function@0000026F76ACC830(ent, distance, target_pos, projectile_speed) (function)
+         predict_physic_damage           	= function@0000026F76B33120(ent, caster, damage) (function)
+         is_attack_immune                	= function@0000026F76ACC1A0(ent) (function)
+      }
+      teammates                       	= table: 0000026F7703DC80 (array table)
+      [
+         1                               	= userdata: 0000026DE2721C00 (userdata)
+      ]
+      fountain                        	= function@0000026F76ADCDF0(need_my, need_only_pos, need_list) (function)
+      modifier                        	= table: 0000026F7703C840 (table)
+      {
+         userdata: 0000026DE2721C00      	= table: 0000026F7703F640 (table)
+         {
+            modifier_fountain_aura_buff     	= userdata: 0000026C80FA1400 (userdata)
+         }
+      }
+      npcs_by_name                    	= table: 0000026F7703E1C0 (table)
+      {
+      }
+      curtime                         	= 440.48541259766 (number)
+      fountains                       	= table: 0000026F7703D340 (table)
+      {
+         list                            	= table: 0000026F7703D480 (array table)
+         [
+         ]
+         enemy                           	= table: 0000026F77259E20 (table)
+         {
+         }
+         my                              	= table: 0000026F7725A0E0 (table)
+         {
+         }
+      }
+      ping                            	= 9.9999999747524e-07 (number)
+      my_hero                         	= table: 0000026F7703F100 (table)
+      {
+         taunt_duration                  	= function@0000026F7703EB80(self) (function)
+         hp                              	= 472 (number)
+         tornado_duration                	= function@0000026F7703ED80(self) (function)
+         mirror_shield                   	= function@0000026F7720E670(self) (function)
+         is_magic_immune                 	= function@0000026F7720DEC0(self) (function)
+         amplify                         	= function@0000026F7720DEF0(self) (function)
+         attribute                       	= function@0000026F7720E3D0(self) (function)
+         aghanim                         	= function@0000026F7720E040(self) (function)
+         is_rooted                       	= function@0000026F7720E6D0(self) (function)
+         is_attack_immune                	= function@0000026F7720E190(self) (function)
+         ability                         	= table: 0000026F7703E340 (array table)
+         [
+         ]
+         item                            	= function@0000026F7720E400(self, name, give_ref) (function)
+         stun_duration                   	= function@0000026F7703EB40(self) (function)
+         is_no_hp_bar                    	= function@0000026F7720DDD0(self) (function)
+         is_bkb                          	= function@0000026F7720DD10(self) (function)
+         is_unselectable                 	= function@0000026F7720DE60(self) (function)
+         projectile_travel_time          	= function@0000026F7720F2D0(self, distance, target_pos, projectile_speed) (function)
+         dist_to                         	= function@0000026F7720F270(self, ent) (function)
+         ref                             	= userdata: 0000026DE2721C00 (userdata)
+         hex_duration                    	= function@0000026F7703F240(self) (function)
+         modifier_duration               	= function@0000026F7703EEC0(self, name) (function)
+         is_silenced                     	= function@0000026F7720DF80(self) (function)
+         ghost_duration                  	= function@0000026F7703E7C0(self) (function)
+         is_doomed                       	= function@0000026F7720E250(self) (function)
+         team                            	= 2 (number)
+         root_duration                   	= function@0000026F7703E880(self, disable_bkb_check) (function)
+         astral_duration                 	= function@0000026F7703EDC0(self, include_unsafe_mods) (function)
+         update                          	= function@0000026F7720D650(self) (function)
+         bkb_duration                    	= function@0000026F7703EF40(self) (function)
+         max_mana                        	= 255.00024414062 (number)
+         init                            	= function@0000026F7703EE40(self, init_ref) (function)
+         maxhp                           	= 472 (number)
+         attack_range                    	= function@0000026F7720E1F0(self) (function)
+         ability_by_name                 	= table: 0000026F7703E600 (table)
+         {
+         }
+         is_invulnerable                 	= function@0000026F7720DE00(self) (function)
+         shard                           	= function@0000026F7720DD40(self) (function)
+         is_out_of_game                  	= function@0000026F7720E220(self) (function)
+         is_stunned                      	= function@0000026F7720E280(self) (function)
+         talents                         	= table: 0000026F7703E400 (table)
+         {
+         }
+         is_taunted                      	= function@0000026F7720DE90(self) (function)
+         is_untargetable_to_enemy        	= function@0000026F7720DDA0(self) (function)
+         unit_name                       	= "npc_dota_hero_drow_ranger" (string)
+         linken_sphere                   	= function@0000026F7720E610(self) (function)
+         talent                          	= function@0000026F7720E5E0(self, talent_number) (function)
+         is_disarmed                     	= function@0000026F7720E7C0(self) (function)
+         mana                            	= 255.00024414062 (number)
+         modifier                        	= function@0000026F7720DF50(self, name) (function)
+         is_untargetable                 	= function@0000026F7720E2E0(self) (function)
+         pos                             	= Vector(-7034.65625, -6759.65625, 384.0) (userdata)
+         can_mirror_ability              	= function@0000026F7703EAC0(self, include_mirror_shield) (function)
+         is_alive                        	= function@0000026F7720DFE0(self) (function)
+         silence_duration                	= function@0000026F7703ED40(self) (function)
+         is_ghosted                      	= function@0000026F7720E730(self) (function)
+         player_ref                      	= userdata: 0000026E68385400 (userdata)
+         is_invisible                    	= function@0000026F7703E740(self) (function)
+      }
+      counter                         	= 1 (number)
+      entity_list_by_classname        	= table: 0000026F7703DDC0 (table)
+      {
+      }
+      need_update_callbacks           	= true (boolean)
+   }
+   Turn_off_extra                  	= function@0000026F5B02E420() (function)
+}

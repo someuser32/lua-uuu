@@ -36,9 +36,8 @@ function vector.is_vector_between(vector, v1, v2, tolerance)
 end
 
 function vector.angle_between_vectors(v1, v2, not_min)
-	local angle = math.deg(math.atan2(v1:GetX(), v1:GetY()) - math.atan2(v2:GetX(), v2:GetY()))
+	local angle = math.abs(math.deg(math.atan2(v1:GetX(), v1:GetY()) - math.atan2(v2:GetX(), v2:GetY())))
 	if not not_min then
-		angle = math.abs(angle)
 		if angle > 180 then
 			return 360 - angle
 		end

@@ -221,6 +221,10 @@ function CNPC:MoveTo(position, queue, showeffects, pushtocallback)
 	return CPlayer:GetLocal():PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, position, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, self, (queue ~= nil and {queue} or {false})[1], (showeffects ~= nil and {showeffects} or {false})[1], (pushtocallback ~= nil and {pushtocallback} or {true})[1])
 end
 
+function CNPC:MoveToDirectional(position, queue, showeffects, pushtocallback)
+	return CPlayer:GetLocal():PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION, nil, position, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, self, (queue ~= nil and {queue} or {false})[1], (showeffects ~= nil and {showeffects} or {false})[1], (pushtocallback ~= nil and {pushtocallback} or {true})[1])
+end
+
 function CNPC:Stop()
 	return CPlayer:GetLocal():PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_STOP, nil, nil, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, self, false, true, true)
 end
@@ -415,6 +419,10 @@ end
 
 function CNPC:IsDebuffImmune()
 	return self:HasState(Enum.ModifierState.MODIFIER_STATE_DEBUFF_IMMUNE)
+end
+
+function CNPC:CanPathThroughTrees()
+	return self:HasFlying() or self:HasState(Enum.ModifierState.MODIFIER_STATE_ALLOW_PATHING_THROUGH_TREES)
 end
 
 function CNPC:IsDisabled()

@@ -48,6 +48,13 @@ end
 
 function LotusHelper:OnUpdate()
 	local tick = self:GetTick()
+	if tick % 15 == 0 then
+		for _, lotus_pool in pairs(CNPC:GetAll()) do
+			if lotus_pool:GetClassName() == "C_DOTA_BaseNPC_MangoTree" then
+				self.lotus_pools[lotus_pool:GetIndex()] = {lotus_pool, lotus_pool:GetAbsOrigin(), lotus_pool:GetModifier("modifier_passive_mango_tree")}
+			end
+		end
+	end
 	if tick % 3 == 0 then
 		local gametime = CGameRules:GetIngameTime()
 		local catching_pool = nil
@@ -89,7 +96,7 @@ end
 function LotusHelper:OnDraw()
 	if self.lotus_pool_count:Get() then
 		for _, lotus_info in pairs(self.lotus_pools) do
-			local x, y, visible = CRenderer:WorldToScreen(lotus_info[1]:GetAbsOrigin() + Vector(0, 0, 72))
+			local x, y, visible = CRenderer:WorldToScreen(lotus_info[2] + Vector(0, 0, 72))
 			if visible then
 				if lotus_info[4] then
 					CRenderer:SetDrawColor(175, 255, 175, 255)

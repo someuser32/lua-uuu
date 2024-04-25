@@ -13,6 +13,7 @@ function CPlayer.static:GetType(func_name, val)
 	end
 	local types = {
 		["GetSelectedUnits"] = "CNPC",
+		["GetActiveAbility"] = "CAbility",
 	}
 	return types[func_name] or CEntity.GetType(self, func_name, val)
 end
@@ -77,6 +78,10 @@ end
 
 function CPlayer.static:GetSelectedUnits()
 	return self:StaticAPICall("GetSelectedUnits", Player.GetSelectedUnits, self:GetLocal())
+end
+
+function CPlayer.static:GetActiveAbility()
+	return self:StaticAPICall("GetActiveAbility", Player.GetActiveAbility, self:GetLocal())
 end
 
 _Classes_Inherite({"Player", "Entity"}, CPlayer)

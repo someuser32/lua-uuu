@@ -1,20 +1,22 @@
 UILibOptionCombo = class("UILibOptionCombo", UILibOptionBase)
 
 function UILibOptionCombo:initialize(...)
+	self.items = {}
 	UILibOptionBase.initialize(self, ...)
 	self.type = "combo"
 end
 
 function UILibOptionCombo:CreateOption(whereAt, name, items, defaultIndex)
+	self.items = items
 	return Menu.AddOptionCombo(whereAt, name, items, (defaultIndex or 1) - 1)
 end
 
 function UILibOptionCombo:GetItems()
-	return Menu.GetItems(self.menu_option)
+	return self.items
 end
 
 function UILibOptionCombo:Get()
-	return self:get_items()[self:GetIndex()]
+	return self:GetItems()[self:GetIndex()]
 end
 
 function UILibOptionCombo:GetIndex()

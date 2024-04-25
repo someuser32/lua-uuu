@@ -257,9 +257,12 @@ return function(basescript)
 
 	for _, callback in pairs(callbacks) do
 		ScriptAPI[callback] = function(...)
-			local base_result = BaseScriptAPI:callback(ScriptAPI, callback, ...)
-			if base_result ~= nil then
+			local args = {...}
+			local status, base_result = pcall(function() return BaseScriptAPI:callback(ScriptAPI, callback, table.unpack(args)) end)
+			if status and base_result ~= nil then
 				return base_result
+			elseif not status then
+				print("ERROR in", callback, base_result)
 			end
 			if ScriptAPI.instance[callback] ~= nil then
 				return ScriptAPI.instance[callback](ScriptAPI.instance, ...)
