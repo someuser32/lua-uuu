@@ -3,16 +3,26 @@ require("libraries/__init__")
 local SpinWebRadius = class("SpinWebRadius")
 
 function SpinWebRadius:initialize()
-	self.path = {"Magma", "Hero Specific", "Universal", "Broodmother", "Spin Web Radius"}
+	local heroname = "npc_dota_hero_broodmother"
+
+	self.spin_web_ability_name = "broodmother_spin_web"
+	self.spin_web_unit_name = "npc_dota_broodmother_web"
+
+	self.path = {"Magma", "Hero Specific", LocaleLib:LocalizeAttribute(KVLib:GetHeroAttribute(heroname)), LocaleLib:LocalizeHeroName(heroname), LocaleLib:LocalizeAbilityName(self.spin_web_ability_name).." Helper"}
 
 	self.enable = UILib:CreateCheckbox(self.path, "Enable", false)
 
 	self.editor_mode = UILib:CreateCheckbox({self.path, "Positions"}, "Editor mode", false)
+	self.editor_mode:SetIcon("~/MenuIcons/edit.png")
 	self.remove_key = UILib:CreateKeybind({self.path, "Positions"}, "Delete")
+	self.remove_key:SetIcon("~/MenuIcons/delete.png")
 
-	self.spin_web_ability_name = "broodmother_spin_web"
+	UILib:SetTabIcon({self.path, "Positions"}, "~/MenuIcons/map_points.png")
+
+	UILib:SetTabIcon(self.path, CAbility:GetAbilityNameIconPath(self.spin_web_ability_name))
+
 	self.spin_web_radius = 1300
-	self.circle_radius = 20
+	self.circle_radius = 24
 	self.particles = {}
 	self.positions = self:ReadPositions()
 
@@ -27,18 +37,19 @@ function SpinWebRadius:OnUpdate()
 		end
 		return
 	end
-	if CHero:GetLocal():GetAbility()
 	local tick = self:GetTick()
 	if tick % 5 == 0 then
-		local units = {}
-		for _, web in pairs(CNPC:GetAll()) do
-			if web:GetUnitName() == "npc_dota_broodmother_web" and self.particles[web:GetIndex()] == nil then
-				local fx = CParticleManager:Create("materials/alert_range.vpcf", Enum.ParticleAttachment.PATTACH_WORLDORIGIN, nil)
-				CParticleManager:SetControlPoint(fx, 0, web:GetAbsOrigin())
-				CParticleManager:SetControlPoint(fx, 1, Vector(5, 255, 5))
-				CParticleManager:SetControlPoint(fx, 2, Vector(self.spin_web_radius, 185, 0))
-				CParticleManager:SetControlPoint(fx, 3, Vector(100, 0, 0))
-				self.particles[web:GetIndex()] = fx
+		if CHero:GetLocal():GetAbility(self.spin_web_ability_name) ~= nil then
+			local units = {}
+			for _, web in pairs(CNPC:GetAll()) do
+				if web:GetUnitName() == self.spin_web_unit_name and self.particles[web:GetIndex()] == nil then
+					local fx = CParticleManager:Create("materials/alert_range.vpcf", Enum.ParticleAttachment.PATTACH_WORLDORIGIN, nil)
+					CParticleManager:SetControlPoint(fx, 0, web:GetAbsOrigin())
+					CParticleManager:SetControlPoint(fx, 1, Vector(255, 255, 255))
+					CParticleManager:SetControlPoint(fx, 2, Vector(self.spin_web_radius, 185, 0))
+					CParticleManager:SetControlPoint(fx, 3, Vector(100, 0, 0))
+					self.particles[web:GetIndex()] = fx
+				end
 			end
 		end
 		for entindex, fx in pairs(table.copy(self.particles)) do
@@ -62,7 +73,7 @@ function SpinWebRadius:OnDraw()
 			local x, y, visible = CRenderer:WorldToScreen(position)
 			if visible then
 				CRenderer:SetDrawColor(255, 255, 255, 255)
-				CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(CAbility:GetAbilityNameIconPath(self.spin_web_ability_name)), x, y, 24, 24)
+				CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(CAbility:GetAbilityNameIconPath(self.spin_web_ability_name)), x, y, self.circle_radius+4, self.circle_radius+4)
 				if math.abs(x-cx) < self.circle_radius and math.abs(y-cy) < self.circle_radius then
 					CRenderer:SetDrawColor(245, 5, 5, 255)
 					if self.editor_mode:Get() and remove then
@@ -87,7 +98,7 @@ function SpinWebRadius:OnPrepareUnitOrders(order)
 				local position = CWorld:GetGroundPosition(pos)
 				local x, y, visible = CRenderer:WorldToScreen(position)
 				if math.abs(x-cx) < self.circle_radius and math.abs(y-cy) < self.circle_radius then
-					if (order["position"]-position):Length2D() > 16 then
+					if (order["position"]-position):Length2D() < 16 then
 						return true
 					end
 					ability:Cast(position, false, true, false)
@@ -104,7 +115,7 @@ function SpinWebRadius:OnEntityCreate(entity)
 	Timers:CreateTimer(0.01, function()
 		if self.enable:Get() then
 			if self.editor_mode:Get() then
-				if ent:GetUnitName() == "npc_dota_broodmother_web" then
+				if ent:GetUnitName() == self.spin_web_unit_name then
 					self:SavePosition(ent:GetAbsOrigin())
 				end
 			end

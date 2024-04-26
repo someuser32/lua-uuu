@@ -74,7 +74,7 @@ end
 
 function KVLib:GetHeroAttribute(name)
 	local npc_heroes = self:GetKV("npc_heroes")
-	return self.npc_heroes["DOTAHeroes"][name]["AttributePrimary"] or self.npc_heroes["DOTAHeroes"]["npc_dota_hero_base"]["AttributePrimary"]
+	return npc_heroes["DOTAHeroes"][name]["AttributePrimary"] or self.npc_heroes["DOTAHeroes"]["npc_dota_hero_base"]["AttributePrimary"]
 end
 
 function KVLib:GetAbilitySpecialKeys(name)

@@ -84,6 +84,7 @@ function OBSBypass:initialize()
 		{{"Magma", "General", "Items manager", "Trees destroyer", "Enable"}, Enum.MenuType.MENU_TYPE_BOOL, false},
 		{{"Magma", "Utility", "Danger Selector", "Enable"}, Enum.MenuType.MENU_TYPE_BOOL, false},
 		{{"Magma", "Utility", "Lotus Helper", "Enable"}, Enum.MenuType.MENU_TYPE_BOOL, false},
+		{{"Magma", "Hero Specific", "Universal", "Broodmother", "Enable"}, Enum.MenuType.MENU_TYPE_BOOL, false},
 	}
 
 	self.font = CRenderer:LoadFont("Verdana", 24, Enum.FontCreate.FONTFLAG_ANTIALIAS, Enum.FontWeight.MEDIUM)

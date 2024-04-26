@@ -90,7 +90,7 @@ function TormentorESP:OnDraw()
 				local x, y, visible = CRenderer:WorldToScreen(info["position"])
 				if visible then
 					CRenderer:SetDrawColor(255, 255, 255, 255)
-					CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(GetHeroIconPath(unit_name)), x, y, 32, 32)
+					CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(GetHeroTopbarIconPathRounded(unit_name)), x, y, 32, 32)
 				end
 				CMiniMap:DrawHeroIcon(unit_name, info["position"], 255, 255, 255, 255, 300)
 			end

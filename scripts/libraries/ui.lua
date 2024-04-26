@@ -15,6 +15,17 @@ function UILib:initialize()
 		self:SetTabIcon({"Magma", "Info Screen"}, "~/MenuIcons/sys_stats.png")
 		self:SetTabIcon({"Magma", "Info Screen", "Show Me More"}, "~/MenuIcons/eye_scan.png")
 		self:SetTabIcon({"Magma", "Utility"}, "~/MenuIcons/utils_wheel.png")
+		self:SetTabIcon({"Magma", "Hero Specific"}, "~/MenuIcons/helmet_g.png")
+		self:SetTabIcon({"Magma", "Hero Specific", "Strength"}, "panorama/images/primary_attribute_icons/primary_attribute_icon_strength_psd.vtex_c")
+		self:SetTabIcon({"Magma", "Hero Specific", "Agility"}, "panorama/images/primary_attribute_icons/primary_attribute_icon_agility_psd.vtex_c")
+		self:SetTabIcon({"Magma", "Hero Specific", "Intelligence"}, "panorama/images/primary_attribute_icons/primary_attribute_icon_intelligence_psd.vtex_c")
+		self:SetTabIcon({"Magma", "Hero Specific", "Universal"}, "panorama/images/primary_attribute_icons/primary_attribute_icon_all_psd.vtex_c")
+		local npc_heroes = KVLib:GetKV("npc_heroes")
+		for heroname, kv in pairs(npc_heroes["DOTAHeroes"]) do
+			if type(kv) == "table" then
+				self:SetTabIcon({"Magma", "Hero Specific", LocaleLib:LocalizeAttribute(KVLib:GetHeroAttribute(heroname)), LocaleLib:LocalizeHeroName(heroname)}, GetHeroIconPath(heroname))
+			end
+		end
 	end}, self)
 end
 
