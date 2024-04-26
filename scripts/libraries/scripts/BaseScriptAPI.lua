@@ -9,6 +9,8 @@ function CBaseScriptAPI:initialize()
 	self.visibility_cache_pre = {}
 	self.tick = 0
 	self.draw_tick = 0
+	self._dt_update = CGameRules:GetGameTime()
+	self._dt_draw = CGameRules:GetGameTime()
 	self.hero_text_font = CRenderer:LoadFont("Verdana", 16, Enum.FontCreate.FONTFLAG_ANTIALIAS, Enum.FontWeight.MEDIUM)
 end
 
@@ -24,6 +26,12 @@ function CBaseScriptAPI:register_instance(instance)
 	end
 	instance.instance.GetDrawTick = instance.instance.GetDrawTick or function(self)
 		return this.draw_tick
+	end
+	instance.instance.DTUpdate = instance.instance.DTUpdate or function(self)
+		return CGameRules:GetGameTime() - this._dt_update
+	end
+	instance.instance.DTDraw = instance.instance.DTDraw or function(self)
+		return CGameRules:GetGameTime() - this._dt_draw
 	end
 end
 
@@ -178,6 +186,7 @@ function CBaseScriptAPI:OnUpdate()
 		end
 	end
 	self.tick = self.tick + 1
+	self._dt_update = CGameRules:GetGameTime()
 end
 
 function CBaseScriptAPI:get_hero_texts()
@@ -211,6 +220,7 @@ function CBaseScriptAPI:OnDraw()
 			end
 		end
 	end
+	self._dt_draw = CGameRules:GetGameTime()
 end
 
 function CBaseScriptAPI:OnPrepareUnitOrders(order)

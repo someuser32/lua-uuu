@@ -19,6 +19,7 @@ function CNPC.static:GetType(func_name, val)
 	local types = {
 		["GetItem"] = "CItem",
 		["GetModifier"] = "CModifier",
+		["GetModifiers"] = "CModifier",
 		["GetChannellingAbility"] = "CAbility",
 		["GetItemByIndex"] = "CItem",
 		["GetAbilityByIndex"] = "CAbility",
@@ -32,6 +33,7 @@ function CNPC.static:ListAPIs()
 	return {
 		"GetAll",
 		"InRadius",
+		"GetModifiers",
 	}
 end
 
@@ -427,6 +429,10 @@ end
 
 function CNPC:IsDisabled()
 	return self:IsStunned() or self:IsHexed() or self:IsNightmared() or self:IsTaunted() or self:IsFeared()
+end
+
+function CNPC:IsLotusPool()
+	return self:GetClassName() == "C_DOTA_BaseNPC_MangoTree"
 end
 
 _Classes_Inherite({"Entity", "NPC"}, CNPC)

@@ -18,3 +18,11 @@ function GetHeroSelectionIconPath(heroname)
 	end
 	return "panorama/images/heroes/selection/"..heroname.."_png.vtex_c"
 end
+
+function BoolToNum(v)
+	return (v == true and {1} or {0})[1]
+end
+
+function NumToBool(v)
+	return v == 1
+end

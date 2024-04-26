@@ -101,7 +101,7 @@ function TreeDestroyerExtended:initialize()
 	self.tree_destroyer_notifications = UILib:CreateCheckbox({self.path, "Settings", "Notification"}, "Text", true)
 	self.tree_destroyer_notifications:SetIcon("~/MenuIcons/Notifications/inotification_def.png")
 
-	self.tree_destroyer_sound_notifications = UILib:CreateCombo({self.path, "Settings", "Notification"}, "Sound Notification", table.map(self.sound_notifications, function(_, info) return info[1] end), 1)
+	self.tree_destroyer_sound_notifications = UILib:CreateCombo({self.path, "Settings", "Notification"}, "Sound", table.map(self.sound_notifications, function(_, info) return info[1] end), 1)
 	self.tree_destroyer_sound_notifications:SetIcon("~/MenuIcons/Notifications/sound_notification.png")
 
 	UILib:SetTabIcon({self.path, "Settings", "Notification"}, "~/MenuIcons/Notifications/alarm.png")

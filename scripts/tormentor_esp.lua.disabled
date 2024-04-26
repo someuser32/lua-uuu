@@ -1,0 +1,201 @@
+require("libraries/__init__")
+
+local TormentorESP = class("TormentorESP")
+
+function TormentorESP:initialize()
+	self.path = {"Magma", "Info Screen", "Tormentor"}
+
+	self.enable = UILib:CreateCheckbox(self.path, "Enable", false)
+
+	UILib:SetTabIcon(self.path, "panorama/images/spellicons/miniboss_reflect_png.vtex_c")
+
+	self.hp_panel_width = (155-5)/2 -- (155 - roshan hp size, 5 - space between bars)
+	self.hp_panel_height = 16
+	self.barrier_base = 2500
+	self.barrier_per_death = 200
+	self.barrier_regen_base = 100
+	self.barrier_regen_per_death = 100
+
+	self.hp_font = CRenderer:LoadFont("Consolas", 14, Enum.FontCreate.FONTFLAG_ANTIALIAS, Enum.FontWeight.MEDIUM)
+
+	self.reflect_particles = {}
+	self.reflect_positions = {}
+	self.tormentors = {}
+	self.tormentors_damage = {}
+	self.tormentors_attackers = {}
+	self.tormentor_deaths = {}
+
+	self.tormentor_teams = {
+		[2] = {color={5, 190, 255}, position=Vector(-8128, -1216, 256), default_offset_x=-self.hp_panel_width/2, default_offset_y=self.hp_panel_height/2},
+		[3] = {color={255, 130, 5}, position=Vector(8128, 1024, 256), default_offset_x=self.hp_panel_width/2+10, default_offset_y=self.hp_panel_height/2},
+	}
+
+	self:ParseData()
+
+	self.listeners = {}
+end
+
+function TormentorESP:DrawHPBar(x, y, color, fill, text)
+	text = tostring(text)
+	CRenderer:SetDrawColor(50, 50, 50, 100)
+	CRenderer:DrawFilledRectCentered(x, y, self.hp_panel_width, self.hp_panel_height)
+	CRenderer:SetDrawColor(0, 0, 0, 255)
+	CRenderer:DrawOutlineRectCentered(x, y, self.hp_panel_width, self.hp_panel_height)
+	CRenderer:SetDrawColor(color[1], color[2], color[3], 255)
+	CRenderer:DrawFilledRect(x-self.hp_panel_width/2+4/2, y-self.hp_panel_height/2+4/2, math.min(self.hp_panel_width-4, math.max(0, math.floor((self.hp_panel_width-4)*fill/100))), self.hp_panel_height-4)
+	if #text > 0 then
+		CRenderer:SetDrawColor(0, 0, 0, 255)
+		CRenderer:DrawTextCentered(self.hp_font, x+1, y, text)
+		CRenderer:SetDrawColor(255, 255, 255, 255)
+		CRenderer:DrawTextCentered(self.hp_font, x, y-1, text)
+	end
+end
+
+function TormentorESP:OnUpdate()
+	local tick = self:GetTick()
+	local dt = self:DTUpdate()
+	local now = CGameRules:GetGameTime()
+	if tick % 15 == 0 then
+		for _, tormentor in pairs(CNPC:GetAll()) do
+			if tormentor:GetClassName() == "C_DOTA_Unit_Miniboss" then
+				self.tormentors[self:GetTeam(tormentor)] = tormentor
+			end
+		end
+	end
+	for entindex, damage in pairs(self.tormentors_damage) do
+		local tormentor = CNPC:new(CEntity:Get(entindex).ent)
+		local barrier_info = self:GetTormentorBarrierInfo(tormentor)
+		self.tormentors_damage[entindex] = math.max(0, damage-barrier_info["regen"]*dt)
+	end
+	if tick % 3 == 0 then
+		for tormentor_index, attackers in pairs(table.copy(self.tormentors_attackers)) do
+			for attacker_index, time in pairs(attackers) do
+				if now-time > 5 then
+					self.tormentors_attackers[tormentor_index][attacker_index] = nil
+				end
+			end
+		end
+	end
+end
+
+function TormentorESP:OnDraw()
+	if not self.enable:Get() then return end
+	local now = CGameRules:GetGameTime()
+	local localteam = CPlayer:GetLocalTeam()
+	for entindex, info in pairs(table.copy(self.reflect_positions)) do
+		if now-info["time"] < 5 then
+			local npc = CNPC:new(CEntity:Get(entindex).ent)
+			if npc:GetTeamNum() ~= localteam and not npc:IsVisible() then
+				local unit_name = npc:GetUnitName()
+				local x, y, visible = CRenderer:WorldToScreen(info["position"])
+				if visible then
+					CRenderer:SetDrawColor(255, 255, 255, 255)
+					CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(GetHeroIconPath(unit_name)), x, y, 32, 32)
+				end
+				CMiniMap:DrawHeroIcon(unit_name, info["position"], 255, 255, 255, 255, 300)
+			end
+		else
+			self.reflect_particles[entindex] = nil
+		end
+	end
+	if not CInput:IsKeyDown(Enum.ButtonCode.KEY_LALT) then
+		for team, info in pairs(self.tormentor_teams) do
+			local tormentor = self.tormentors[team]
+			if tormentor then
+				local pos = {CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"])), CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))}
+				local attackers = table.values(table.map(self.tormentors_attackers[tormentor:GetIndex()] or {}, function(entindex, _) return CNPC:new(CEntity:Get(entindex).ent):GetUnitName() end))
+				self:DrawHPBar(pos[1], pos[2], info["color"], 100, "")
+				local w, h = 16, 16
+				for _, attacker in pairs(attackers) do
+					CRenderer:SetDrawColor(255, 255, 255, 255)
+					CRenderer:DrawImage(CRenderer:GetOrLoadImage(GetHeroIconPath(attacker)), pos[1]-self.hp_panel_width/2 + w*(_-1), pos[2]+self.hp_panel_height/2 + 4 + h*(_-1), w, h)
+				end
+			end
+		end
+	end
+end
+
+function TormentorESP:OnEntityHurt(event)
+	local attacker = CNPC:new(event["source"])
+	local victim = CNPC:new(event["target"])
+	local ability = CAbility:new(event["ability"])
+	if victim:GetClassName() == "C_DOTA_Unit_Miniboss" then
+		self.tormentors_damage[victim:GetIndex()] = (self.tormentors_damage[victim:GetIndex()] or 0) + event["damage"]
+	elseif attacker:GetClassName() == "C_DOTA_Unit_Miniboss" then
+		if ability:GetName() == "miniboss_reflect" then
+			if self.tormentors_attackers[attacker:GetIndex()] == nil then
+				self.tormentors_attackers[attacker:GetIndex()] = {}
+			end
+			self.tormentors_attackers[attacker:GetIndex()][victim:GetIndex()] = CGameRules:GetGameTime()
+		end
+	end
+end
+
+function TormentorESP:OnParticleCreate(particle)
+	-- DeepPrintTable(particle)
+	-- spawn particles/neutral_fx/miniboss_shield_dire.vpcf
+	if table.contains({"miniboss_damage_reflect_radiant", "miniboss_damage_reflect_dire"}, particle["name"]) then
+		self.reflect_particles[particle["index"]] = true
+	end
+end
+
+function TormentorESP:OnParticleUpdateEntity(particle)
+	local reflect_info = self.reflect_particles[particle["index"]]
+	if reflect_info ~= nil then
+		if particle["controlPoint"] == 1 then
+			self.reflect_positions[particle["entIdx"]] = {position=particle["position"], time=CGameRules:GetGameTime()}
+			self.reflect_particles[particle["index"]] = nil
+		end
+	end
+end
+
+function TormentorESP:GetTeam(tormentor)
+	local team = table.find(self.tormentors, tormentor)
+	if team ~= nil then
+		return team
+	end
+	local tormentors = table.values(table.map(self.tormentor_teams, function(team, info) return {team, (info["position"]-tormentor:GetAbsOrigin()):Length2D()} end))
+	table.sort(tormentors, function(a, b) return a[2] < b[2] end)
+	return tormentors[1][1]
+end
+
+function TormentorESP:ParseData()
+	local matchid = CGameRules:GetMatchID()
+	local now = math.floor(CGameRules:GetGameTime())
+	if CConfig:ReadInt("magma_tormentor_esp", "matchid", -1) ~= matchid or CConfig:ReadInt("magma_tormentor_esp", "time", -1) > now then
+		CConfig:WriteInt("magma_tormentor_esp", "matchid", matchid)
+		CConfig:WriteInt("magma_tormentor_esp", "time", now)
+		CConfig:WriteString("magma_tormentor_esp", "tormentor_deaths", "{}")
+		self.tormentors_deaths = {}
+	else
+		self.tormentors_deaths = json:decode(CConfig:ReadString("magma_tormentor_esp", "tormentor_deaths", "{}"))
+	end
+end
+
+function TormentorESP:SaveData()
+	CConfig:WriteInt("magma_tormentor_esp", "matchid", CGameRules:GetMatchID())
+	CConfig:WriteInt("magma_tormentor_esp", "time", math.floor(CGameRules:GetGameTime()))
+	CConfig:WriteString("magma_tormentor_esp", "tormentor_deaths", json:encode(self.tormentor_deaths))
+end
+
+function TormentorESP:GetTormentorBarrierInfo(tormentor)
+	local ability = tormentor:GetAbility("miniboss_unyielding_shield")
+	local barrier_base = ability ~= nil and ability:GetLevelSpecialValueFor("damage_absorb") or self.barrier_base
+	local barrier_per_death = ability ~= nil and ability:GetLevelSpecialValueFor("absorb_bonus_per_death") or self.barrier_per_death
+	local barrier_regen_base = ability ~= nil and ability:GetLevelSpecialValueFor("regen_per_second") or self.barrier_regen_base
+	local barrier_regen_per_death = ability ~= nil and ability:GetLevelSpecialValueFor("regen_bonus_per_death") or self.barrier_regen_per_death
+	local deaths = self.tormentor_deaths[tostring(self:GetTeam(tormentor))] or 0
+	return {barrier=math.floor(barrier_base+barrier_per_death*deaths), regen=math.floor(barrier_regen_base+barrier_per_death*deaths)}
+end
+
+function TormentorESP:GetTormentorTeamBarrierInfo(team)
+	local deaths = self.tormentor_deaths[tostring(team)] or 0
+	return {barrier=math.floor(self.barrier_base+self.barrier_per_death*deaths), regen=math.floor(self.barrier_regen_base+self.barrier_regen_per_death*deaths)}
+end
+
+function TormentorESP:GetTormentorBarrier(tormentor)
+	local barrier_info = self:GetTormentorBarrierInfo(tormentor)
+	return {math.floor(barrier_info["barrier"]-(self.tormentors_damage[tormentor:GetIndex()] or 0)), math.floor(barrier_info["barrier"])}
+end
+
+return BaseScriptAPI(TormentorESP)

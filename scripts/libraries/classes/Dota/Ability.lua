@@ -128,6 +128,10 @@ function CAbility:GetNameGeneral()
 	return name
 end
 
+function CAbility:GetName(general)
+	return general and self:GetNameGeneral() or self:APIGetName()
+end
+
 function CAbility:HasBehavior(behavior)
 	return (self:GetBehavior() & behavior) == behavior
 end

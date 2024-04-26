@@ -23,7 +23,7 @@ function LotusHelper:initialize()
 
 	self.lotus_pools = {}
 	for _, lotus_pool in pairs(CNPC:GetAll()) do
-		if lotus_pool:GetClassName() == "C_DOTA_BaseNPC_MangoTree" then
+		if lotus_pool:IsLotusPool() then
 			self.lotus_pools[lotus_pool:GetIndex()] = {lotus_pool, lotus_pool:GetAbsOrigin(), lotus_pool:GetModifier("modifier_passive_mango_tree")}
 		end
 	end
@@ -50,7 +50,7 @@ function LotusHelper:OnUpdate()
 	local tick = self:GetTick()
 	if tick % 15 == 0 then
 		for _, lotus_pool in pairs(CNPC:GetAll()) do
-			if lotus_pool:GetClassName() == "C_DOTA_BaseNPC_MangoTree" then
+			if lotus_pool:IsLotusPool() then
 				self.lotus_pools[lotus_pool:GetIndex()] = {lotus_pool, lotus_pool:GetAbsOrigin(), lotus_pool:GetModifier("modifier_passive_mango_tree")}
 			end
 		end
