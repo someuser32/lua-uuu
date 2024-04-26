@@ -288,7 +288,12 @@ function OBSBypass:SaveAndDisableOptions(list)
 		local option = Menu.FindMenu(category, name, info[2])
 		if option ~= nil then
 			local option_key = table.concat(info[1], "/||/")
-			local value = (info[2] == Enum.MenuType.MENU_TYPE_BOOL and {Menu.IsEnabled(option)} or {Menu.GetValue(option)})[1]
+			local value = Menu.GetValue(option)
+			if info[2] == Enum.MenuType.MENU_TYPE_BOOL then
+				value = Menu.IsEnabled(option)
+			elseif info[2] == Enum.MenuType.MENU_TYPE_MULTI_SELECT then
+				value = table.values(table.filter(Menu.GetItems(option), function(_, item) return Menu.IsSelected(option, item) end))
+			end
 			if self.options_cache[option_key] == nil then
 				self.options_cache[option_key] = value
 			end
@@ -307,6 +312,10 @@ function OBSBypass:SaveAndDisableOptions(list)
 				else
 					if info[2] == Enum.MenuType.MENU_TYPE_BOOL then
 						Menu.SetEnabled(option, new_value, true)
+					elseif info[2] == Enum.MenuType.MENU_TYPE_MULTI_SELECT then
+						for _, item in pairs(Menu.GetItems(option)) do
+							Menu.SetSelected(option, item, table.contains(new_value, item), true)
+						end
 					else
 						Menu.SetValue(option, new_value, true)
 					end
@@ -334,6 +343,10 @@ function OBSBypass:RestoreOptions(list)
 			if old_value ~= nil then
 				if info[2] == Enum.MenuType.MENU_TYPE_BOOL then
 					Menu.SetEnabled(option, old_value, true)
+				elseif info[2] == Enum.MenuType.MENU_TYPE_MULTI_SELECT then
+					for _, item in pairs(Menu.GetItems(option)) do
+						Menu.SetSelected(option, item, table.contains(old_value, item), true)
+					end
 				else
 					Menu.SetValue(option, old_value, true)
 				end
@@ -361,14 +374,16 @@ function OBSBypass:OnMenuOptionChange(option, oldValue, newValue)
 		[self.disable_scripts] = self.scripts_options,
 	}
 	for o, l in pairs(kv) do
-		if o:Get() then
-			Timers:CreateTimer(0.01, function()
-				self:SaveAndDisableOptions(l)
-			end, self)
-		else
-			Timers:CreateTimer(0.01, function()
-				self:RestoreOptions(l)
-			end, self)
+		if o.menu_option == option or self.enable.menu_option == option then
+			if o:Get() then
+				Timers:CreateTimer(0.01, function()
+					self:SaveAndDisableOptions(l)
+				end, self)
+			else
+				Timers:CreateTimer(0.01, function()
+					self:RestoreOptions(l)
+				end, self)
+			end
 		end
 	end
 end
