@@ -5,10 +5,6 @@ local TormentorESP = class("TormentorESP")
 function TormentorESP:initialize()
 	self.path = {"Magma", "Info Screen", "Tormentor"}
 
-	self.enable = UILib:CreateCheckbox(self.path, "Enable", false)
-
-	UILib:SetTabIcon(self.path, "panorama/images/spellicons/miniboss_reflect_png.vtex_c")
-
 	self.hp_panel_width = (155-5)/2 -- (155 - roshan hp size, 5 - space between bars)
 	self.hp_panel_height = 16
 	self.barrier_base = 2500
@@ -20,6 +16,31 @@ function TormentorESP:initialize()
 
 	self.hp_font = CRenderer:LoadFont("Consolas", 14, Enum.FontCreate.FONTFLAG_ANTIALIAS, Enum.FontWeight.MEDIUM)
 
+	self.tormentor_teams = {
+		[2] = {color={5, 190, 255}, position=Vector(-8128, -1216, 256), default_offset_x=-self.hp_panel_width/2, default_offset_y=self.hp_panel_height/2},
+		[3] = {color={255, 130, 5}, position=Vector(8128, 1024, 256), default_offset_x=self.hp_panel_width/2+10, default_offset_y=self.hp_panel_height/2},
+	}
+
+	self.enable = UILib:CreateCheckbox(self.path, "Enable", false)
+
+	self.move_key = UILib:CreateKeybind({self.path, "Panel"}, "Move key", Enum.ButtonCode.KEY_LCONTROL)
+	self.move_key:SetIcon("~/MenuIcons/drag_def.png")
+	self.reset_panel_positions = UILib:CreateButton({self.path, "Panel"}, "Reset positions", function()
+		for team, info in pairs(self.tormentor_teams) do
+			CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"]))
+			CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))
+		end
+	end)
+
+	UILib:SetTabIcon({self.path, "Panel"}, "~/MenuIcons/panel_def.png")
+
+	self.reset_info = UILib:CreateButton(self.path, "Reset data", function()
+		self:ResetAndSaveData()
+	end)
+	self.reset_info:SetTip("[WARNING]\nRESETS DATA FROM CURRENT MATCH\nUSE ONLY IN CASE IF SOMETHING BROKEN")
+
+	UILib:SetTabIcon(self.path, "panorama/images/spellicons/miniboss_reflect_png.vtex_c")
+
 	self.reflect_particles = {}
 	self.reflect_positions = {}
 	self.tormentors = {}
@@ -28,14 +49,11 @@ function TormentorESP:initialize()
 	self.tormentors_deaths_count = {}
 	self.tormentors_last_death = {}
 
-	self.tormentor_teams = {
-		[2] = {color={5, 190, 255}, position=Vector(-8128, -1216, 256), default_offset_x=-self.hp_panel_width/2, default_offset_y=self.hp_panel_height/2},
-		[3] = {color={255, 130, 5}, position=Vector(8128, 1024, 256), default_offset_x=self.hp_panel_width/2+10, default_offset_y=self.hp_panel_height/2},
-	}
-
 	self:ParseData()
 
 	self.listeners = {}
+
+	self.mouse_previous_position = nil
 end
 
 function TormentorESP:DrawHPBar(x, y, color, border_color, fill, text)
@@ -54,6 +72,23 @@ function TormentorESP:DrawHPBar(x, y, color, border_color, fill, text)
 	end
 end
 
+function TormentorESP:DrawHPBarWithDrag(x, y, color, border_color, fill, text, team, should_move, cursor_position)
+	if should_move then
+		local bounds_min, bounds_max = {x-self.hp_panel_width/2, y-self.hp_panel_height/2}, {x+self.hp_panel_width/2, y+self.hp_panel_height/2}
+		if ((cursor_position[1] > bounds_min[1] and cursor_position[1] < bounds_max[1]) and (cursor_position[2] > bounds_min[2] and cursor_position[2] < bounds_max[2])) or (self.mouse_previous_position ~= nil and self.mouse_previous_position[2] == team) then
+			if self.mouse_previous_position ~= nil then
+				local dt = {cursor_position[1] - self.mouse_previous_position[1][1], cursor_position[2] - self.mouse_previous_position[1][2]}
+				CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(x+dt[1]))
+				CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(y+dt[2]))
+			end
+			self.mouse_previous_position = {cursor_position, team}
+		end
+	else
+		self.mouse_previous_position = nil
+	end
+	self:DrawHPBar(x, y, color, border_color, fill, text)
+end
+
 function TormentorESP:OnUpdate()
 	local tick = self:GetTick()
 	local dt = self:DTUpdate()
@@ -62,8 +97,11 @@ function TormentorESP:OnUpdate()
 		local found = false
 		for _, tormentor in pairs(CNPC:GetAll()) do
 			if tormentor:GetClassName() == "C_DOTA_Unit_Miniboss" then
-				self.tormentors[self:GetTeam(tormentor)] = tormentor:GetIndex()
-				found = true
+				local entindex = tormentor:GetIndex()
+				if self.tormentors[self:GetTeam(tormentor)] ~= entindex then
+					self.tormentors[self:GetTeam(tormentor)] = entindex
+					found = true
+				end
 			end
 		end
 		if found then
@@ -117,12 +155,15 @@ function TormentorESP:OnDraw()
 		end
 	end
 	if not CInput:IsKeyDown(Enum.ButtonCode.KEY_LALT) then
+		local is_key_down = CInput:IsKeyDown(Enum.ButtonCode.KEY_MOUSE1)
+		local is_move_key_down = self.move_key:IsActive()
+		local cx, cy = CInput:GetCursorPos()
 		local ingame = CGameRules:GetIngameTime()
 		for team, info in pairs(table.copy(self.tormentor_teams)) do
 			local entindex = self.tormentors[team]
 			local tormentor = CNPC:FromIndex(entindex)
+			local pos = {CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"])), CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))}
 			if tormentor or entindex then
-				local pos = {CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"])), CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))}
 				local attackers = table.keys(self.tormentors_attackers[entindex] or {})
 				local enemy_attackers = {}
 				for _, attacker_entindex in pairs(attackers) do
@@ -131,22 +172,21 @@ function TormentorESP:OnDraw()
 						table.insert(enemy_attackers, attacker)
 					end
 				end
-				self:DrawHPBar(pos[1], pos[2], info["color"], #attackers <= 0 and {0, 0, 0} or {255, 35, 35}, 100, #attackers <= 0 and "ALIVE" or "ATTACK")
+				self:DrawHPBarWithDrag(pos[1], pos[2], info["color"], #attackers <= 0 and {0, 0, 0} or {255, 35, 35}, 100, #attackers <= 0 and "ALIVE" or "ATTACK", team, is_move_key_down and is_key_down, {cx, cy})
 				local w, h = 16, 16
 				for _, attacker in pairs(enemy_attackers) do
 					CRenderer:SetDrawColor(255, 255, 255, 255)
 					CRenderer:DrawImage(CRenderer:GetOrLoadImage(GetHeroIconPath(attacker:GetUnitName())), pos[1]-self.hp_panel_width/2 + w*(_-1), pos[2]+self.hp_panel_height/2 + 4, w, h)
 				end
 			else
-				local pos = {CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"])), CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))}
 				local last_death = self.tormentors_last_death[tostring(team)]
 				if last_death ~= nil then
 					local next_respawn = math.ceil(last_death+self.tormentor_respawn)
-					self:DrawHPBar(pos[1], pos[2], info["color"], {0, 0, 0}, (ingame-last_death)/(next_respawn-last_death)*100, ToClockMin(next_respawn))
+					self:DrawHPBarWithDrag(pos[1], pos[2], info["color"], {0, 0, 0}, (ingame-last_death)/(next_respawn-last_death)*100, ToClockMin(next_respawn), team, is_move_key_down and is_key_down, {cx, cy})
 				elseif ingame < self.tormentor_first_respawn then
-					self:DrawHPBar(pos[1], pos[2], info["color"], {0, 0, 0}, ingame/self.tormentor_first_respawn*100, ToClockMin(self.tormentor_first_respawn))
+					self:DrawHPBarWithDrag(pos[1], pos[2], info["color"], {0, 0, 0}, ingame/self.tormentor_first_respawn*100, ToClockMin(self.tormentor_first_respawn), team, is_move_key_down and is_key_down, {cx, cy})
 				else
-					self:DrawHPBar(pos[1], pos[2], info["color"], {0, 0, 0}, 100, "?")
+					self:DrawHPBarWithDrag(pos[1], pos[2], info["color"], {0, 0, 0}, 100, "?", team, is_move_key_down and is_key_down, {cx, cy})
 				end
 			end
 		end
@@ -273,6 +313,14 @@ function TormentorESP:SaveData()
 	CConfig:WriteString("magma_tormentor_esp", "tormentors_entindexes", json:encode(tormentors_entindexes))
 	CConfig:WriteString("magma_tormentor_esp", "tormentors_deaths_count", json:encode(self.tormentors_deaths_count))
 	CConfig:WriteString("magma_tormentor_esp", "tormentors_last_death", json:encode(self.tormentors_last_death))
+end
+
+function TormentorESP:ResetAndSaveData()
+	CConfig:WriteInt("magma_tormentor_esp", "matchid", CGameRules:GetMatchID())
+	CConfig:WriteInt("magma_tormentor_esp", "time", math.floor(CGameRules:GetGameTime()))
+	CConfig:WriteString("magma_tormentor_esp", "tormentors_entindexes", "{}")
+	CConfig:WriteString("magma_tormentor_esp", "tormentors_deaths_count", "{}")
+	CConfig:WriteString("magma_tormentor_esp", "tormentors_last_death", "{}")
 end
 
 function TormentorESP:GetTormentorBarrierInfo(tormentor)

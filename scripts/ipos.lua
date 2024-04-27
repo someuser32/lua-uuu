@@ -8,11 +8,7 @@ function IPos:initialize()
 	self.enable = UILib:CreateCheckbox(self.path, "Enable", false)
 	self.enable:SetTip("Shows useful positions on map:\n- Roshan blind spots\n- Fountain invis positions (you must be in invisibility)\n- Camp block helper")
 
-	self.show_key = UILib:CreateCombo(self.path, "Show key", {
-		"Ctrl",
-		"Alt",
-		"Always",
-	}, 0)
+	self.show_key = UILib:CreateKeybind(self.path, "Show key", Enum.ButtonCode.KEY_LCONTROL)
 
 	UILib:SetTabIcon(self.path, "~/MenuIcons/google_maps.png")
 
@@ -77,24 +73,12 @@ function IPos:initialize()
 	self.listeners = {}
 end
 
-function IPos:ShouldDraw()
-	local option = self.show_key:Get()
-	if option == "Always" then
-		return true
-	elseif option == "Ctrl" then
-		return CInput:IsKeyDown(Enum.ButtonCode.KEY_LCONTROL)
-	elseif option == "Alt" then
-		return CInput:IsKeyDown(Enum.ButtonCode.KEY_LALT)
-	end
-	return false
-end
-
 function IPos:OnDraw()
 	if not self.enable:Get() then return end
 	local is_key_down = CInput:IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
 	local active_ability = CPlayer:GetActiveAbility()
 	local cx, cy = CInput:GetCursorPos()
-	if self:ShouldDraw() then
+	if self.show_key:IsActive() or self.show_key:Get() == Enum.ButtonCode.KEY_NONE then
 		for _, position in pairs(self.positions) do
 			local x, y, visible = CRenderer:WorldToScreen(position)
 			if visible then
