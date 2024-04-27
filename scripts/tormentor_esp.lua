@@ -36,6 +36,8 @@ function TormentorESP:initialize()
 
 	self.reset_info = UILib:CreateButton(self.path, "Reset data", function()
 		self:ResetAndSaveData()
+		self.tormentors = {}
+		self:ParseData()
 	end)
 	self.reset_info:SetTip("[WARNING]\nRESETS DATA FROM CURRENT MATCH\nUSE ONLY IN CASE IF SOMETHING BROKEN")
 
@@ -48,6 +50,7 @@ function TormentorESP:initialize()
 	self.tormentors_attackers = {}
 	self.tormentors_deaths_count = {}
 	self.tormentors_last_death = {}
+	self.tormentors_exceptions = {}
 
 	self:ParseData()
 
@@ -96,9 +99,9 @@ function TormentorESP:OnUpdate()
 	if tick % 15 == 0 then
 		local found = false
 		for _, tormentor in pairs(CNPC:GetAll()) do
-			if tormentor:GetClassName() == "C_DOTA_Unit_Miniboss" then
+			if tormentor:GetClassName() == "C_DOTA_Unit_Miniboss" and tormentor:IsAlive() then
 				local entindex = tormentor:GetIndex()
-				if self.tormentors[self:GetTeam(tormentor)] ~= entindex then
+				if not table.contains(self.tormentors_exceptions, entindex) and self.tormentors[self:GetTeam(tormentor)] ~= entindex then
 					self.tormentors[self:GetTeam(tormentor)] = entindex
 					found = true
 				end
@@ -221,6 +224,7 @@ function TormentorESP:OnEntityKilled(event)
 		self.tormentors_last_death[tostring(team)] = math.floor(CGameRules:GetIngameTime())
 		self.tormentors[team] = nil
 		self.tormentors_damage[victim:GetIndex()] = nil
+		table.insert(self.tormentors_exceptions, victim:GetIndex())
 		self:SaveData()
 	end
 end
@@ -241,6 +245,7 @@ function TormentorESP:OnParticleCreate(particle)
 			self.tormentors_last_death[tostring(team)] = math.floor(CGameRules:GetIngameTime())
 			self.tormentors[team] = nil
 			self.tormentors_damage[particle["entity_id"]] = nil
+			table.insert(self.tormentors_exceptions, particle["entity_id"])
 			self:SaveData()
 		end
 	end
