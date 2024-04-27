@@ -33,3 +33,14 @@ end
 function NumToBool(v)
 	return v == 1
 end
+
+function ToClockMin(time, delimeter)
+	local min, sec = math.floor(time/60), math.floor(time%60)
+	if min < 10 then
+		min = "0"..min
+	end
+	if sec < 10 then
+        sec = "0"..sec
+	end
+	return tostring(min..(delimeter or ":")..sec)
+end

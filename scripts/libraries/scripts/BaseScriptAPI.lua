@@ -12,6 +12,8 @@ function CBaseScriptAPI:initialize()
 	self._dt_update = CGameRules:GetGameTime()
 	self._dt_draw = CGameRules:GetGameTime()
 	self.hero_text_font = CRenderer:LoadFont("Verdana", 16, Enum.FontCreate.FONTFLAG_ANTIALIAS, Enum.FontWeight.MEDIUM)
+	CEvent:AddListener("entity_hurt")
+	CEvent:AddListener("entity_killed")
 end
 
 function CBaseScriptAPI:register_instance(instance)
@@ -228,6 +230,15 @@ function CBaseScriptAPI:OnPrepareUnitOrders(order)
 		return false
 	end
 	return true
+end
+
+function CBaseScriptAPI:OnFireEventClient(data)
+	local event = CEvent:new(data["event"])
+	if data["name"] == "entity_hurt" then
+		self:fire_listener_callback("OnEntityHurtEvent", event:GetInt("entindex_killed"), event:GetInt("entindex_attacker"), event:GetInt("entindex_inflictor"), event:GetFloat("damage"))
+	elseif data["name"] == "entity_killed" then
+		self:fire_listener_callback("OnEntityKilledEvent", event:GetInt("entindex_killed"), event:GetInt("entindex_attacker"), event:GetInt("entindex_inflictor"))
+	end
 end
 
 local BaseScriptAPI = CBaseScriptAPI:new()

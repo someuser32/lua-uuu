@@ -1,7 +1,9 @@
 local CEvent = class("CEvent", DBase)
 
 function CEvent.static:StaticAPIs()
-	return true
+	return {
+		"AddListener",
+	}
 end
 
 _Classes_Inherite({"Event"}, CEvent)

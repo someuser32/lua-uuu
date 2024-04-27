@@ -91,7 +91,6 @@ end
 
 function IPos:OnDraw()
 	if not self.enable:Get() then return end
-	-- print(CInput:GetWorldCursorPos())
 	local is_key_down = CInput:IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
 	local active_ability = CPlayer:GetActiveAbility()
 	local cx, cy = CInput:GetCursorPos()

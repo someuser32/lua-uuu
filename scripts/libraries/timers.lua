@@ -53,7 +53,7 @@ function Timers:Think()
 end
 
 function Timers:HandleEventError(id, event, err)
-	print(err)
+	print(id, event, err)
 end
 
 function Timers:CreateTimer(callback, args, context)

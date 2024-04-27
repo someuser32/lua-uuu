@@ -57,6 +57,14 @@ function CNPC.static:FindInRadius(vec, radius, teamNum, teamType)
 	return self:StaticAPICall("InRadius", NPCs.InRadius, vec, radius, teamNum, teamType)
 end
 
+function CNPC.static:FromIndex(entindex)
+	local ent = CEntity:Get(entindex)
+	if ent == nil or not ent:IsEntity() then
+		return nil
+	end
+	return CNPC:new(ent.ent)
+end
+
 function CNPC:GetInventory(exclude_level)
 	local items = {}
 	for i=0, item_exclude_level[exclude_level or 2] do
