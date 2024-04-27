@@ -196,6 +196,7 @@ local function GetNPCInfo(npc)
 end
 
 function OBSBypass:OnUpdate()
+	if not self.enable:Get() then return end
 	local tick = self:GetTick()
 	if self.alternative:Get() then
 		local localplayer = CPlayer:GetLocal()

@@ -75,10 +75,10 @@ end
 
 function IPos:OnDraw()
 	if not self.enable:Get() then return end
-	local is_key_down = CInput:IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
 	local active_ability = CPlayer:GetActiveAbility()
 	local cx, cy = CInput:GetCursorPos()
 	if self.show_key:IsActive() or self.show_key:Get() == Enum.ButtonCode.KEY_NONE then
+		local is_key_down = CInput:IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
 		for _, position in pairs(self.positions) do
 			local x, y, visible = CRenderer:WorldToScreen(position)
 			if visible then

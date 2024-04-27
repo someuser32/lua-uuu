@@ -16,6 +16,8 @@ function AutoDisablerExtended:initialize()
 		{"item_heavens_halberd", false, true},
 		{"item_hurricane_pike", false, true},
 		{"item_psychic_headband", false, true},
+		{"item_rod_of_atos", false, true},
+		{"item_gungir", false, false},
 		{"lion_voodoo", true, true},
 		{"shadow_shaman_voodoo", true, true},
 		{"rubick_telekinesis", true, true},

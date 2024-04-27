@@ -29,12 +29,6 @@ function SideNotifications:OnDraw()
 				if icon_type == "twin_gate" then
 					CMiniMap:DrawHeroIcon(owner, icon[2], 255, 255, 255, 180, 700)
 					CMiniMap:DrawHeroIcon(owner, icon[3], 255, 255, 255, 255, 900)
-					-- CMiniMap:SendLine(icon[2], true, true)
-					-- CMiniMap:SendLine(icon[3], false, true)
-					-- CMiniMap:SendLine(icon[3], true, true)
-					-- CMiniMap:SendLine(icon[3] + ((icon[2]-icon[3]):Rotated(Angle(0, 40, 0)):Normalized()) * 850, false, true)
-					-- CMiniMap:SendLine(icon[3], true, true)
-					-- CMiniMap:SendLine(icon[3] + ((icon[2]-icon[3]):Rotated(Angle(0, -40, 0)):Normalized()) * 850, false, true)
 				end
 			end
 		end

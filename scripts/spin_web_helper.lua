@@ -26,6 +26,8 @@ function SpinWebRadius:initialize()
 	self.particles = {}
 	self.positions = self:ReadPositions()
 
+	self.has_spin_web = false
+
 	self.listeners = {}
 end
 
@@ -39,7 +41,8 @@ function SpinWebRadius:OnUpdate()
 	end
 	local tick = self:GetTick()
 	if tick % 5 == 0 then
-		if CHero:GetLocal():GetAbility(self.spin_web_ability_name) ~= nil then
+		self.has_spin_web = CHero:GetLocal():GetAbility(self.spin_web_ability_name) ~= nil
+		if self.has_spin_web then
 			local units = {}
 			for _, web in pairs(CNPC:GetAll()) do
 				if web:GetUnitName() == self.spin_web_unit_name and self.particles[web:GetIndex()] == nil then
@@ -64,6 +67,7 @@ end
 
 function SpinWebRadius:OnDraw()
 	if not self.enable:Get() then return end
+	if not self.has_spin_web then return end
 	local active_ability = CPlayer:GetActiveAbility()
 	local cx, cy = CInput:GetCursorPos()
 	local remove = self.remove_key:IsActiveOnce()
@@ -90,6 +94,7 @@ end
 
 function SpinWebRadius:OnPrepareUnitOrders(order)
 	if not self.enable:Get() then return true end
+	if not self.has_spin_web then return true end
 	if order["order"] == Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION and order["ability"] ~= nil then
 		local ability = CAbility:new(order["ability"])
 		if ability:GetName() == self.spin_web_ability_name then
@@ -111,6 +116,7 @@ function SpinWebRadius:OnPrepareUnitOrders(order)
 end
 
 function SpinWebRadius:OnEntityCreate(entity)
+	if not self.has_spin_web then return true end
 	local ent = CEntity:new(entity)
 	Timers:CreateTimer(0.01, function()
 		if self.enable:Get() then
