@@ -65,11 +65,14 @@ function LinkenBreaker:CanBreakLinken(hero, enemy, option, range_buffer, excepti
 	return ability ~= nil
 end
 
-function LinkenBreaker:CanUseAbility(hero, enemy, option, range_buffer, exceptions)
+function LinkenBreaker:CanUseAbility(ability, enemy, option, range_buffer, exceptions)
+	if not CAbility:IsTriggersAbsorb(ability:GetName()) then
+		return true
+	end
 	if not enemy:IsLinkensProtected() and not enemy:IsMirrorProtected() then
 		return true
 	end
-	return self:CanBreakLinken(hero, enemy, option, range_buffer, exceptions)
+	return self:CanBreakLinken(ability:GetCaster(), enemy, option, range_buffer, exceptions)
 end
 
 function LinkenBreaker:BreakLinken(hero, enemy, option, range_buffer, exceptions, callback, max_repeats)

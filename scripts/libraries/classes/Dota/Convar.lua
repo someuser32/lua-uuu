@@ -1,5 +1,7 @@
+---@class CConvar: DBase
 local CConvar = class("CConvar", DBase)
 
+---@return string[]
 function CConvar.static:StaticAPIs()
 	return {
 		"Find",

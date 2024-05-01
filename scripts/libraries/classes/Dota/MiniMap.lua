@@ -1,5 +1,7 @@
+---@class CMiniMap: DBase
 local CMiniMap = class("CMiniMap", DBase)
 
+---@return boolean
 function CMiniMap.static:StaticAPIs()
 	return true
 end

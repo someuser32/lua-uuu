@@ -4,39 +4,50 @@ itertools = {}
 
 math.randomseed(os.time())
 
+---@param val number
+---@param decimal number?
+---@return number
 function math.round(val, decimal)
 	local exp = decimal and 10^decimal or 1
 	return math.ceil(val * exp - 0.5) / exp
 end
 
+---@param lower number
+---@param greater number
+---@return number
 function math.random_float(lower, greater)
 	return lower + math.random()  * (greater - lower)
 end
 
+---@param chance number
+---@return boolean
 function RollPercentage(chance)
 	return math.random(0, 100) >= (100-chance)
 end
 
+---@param vector Vector
+---@param v1 Vector
+---@param v2 Vector
+---@param tolerance number
+---@return boolean
 function vector.is_vector_between(vector, v1, v2, tolerance)
 	tolerance = tolerance or 50
-	local vec_x = vector:GetX()
-	local vec_y = vector:GetY()
-	local v1_x = v1:GetX()
-	local v1_y = v1:GetY()
-	local v2_x = v2:GetX()
-	local v2_y = v2:GetY()
-	if (vec_x >= math.max(v1_x, v2_x) + tolerance) or (vec_x <= math.min(v1_x, v2_x) - tolerance) or (vec_y <= math.min(v1_y, v2_y) - tolerance) or (vec_y >= math.max(v1_y, v2_y) + tolerance) then
+	if (vector.x >= math.max(v1.x, v2.x) + tolerance) or (vector.x <= math.min(v1.x, v2.x) - tolerance) or (vector.y <= math.min(v1.y, v2.y) - tolerance) or (vector.y >= math.max(v1.y, v2.y) + tolerance) then
 		return false
-	elseif v1_x == v2_x then
-		return math.abs(v1_x - vec_x) < tolerance
-	elseif v1_y == v2_y then
-		return math.abs(v1_y - vec_y) < tolerance
+	elseif v1.x == v2.x then
+		return math.abs(v1.x - vector.x) < tolerance
+	elseif v1.y == v2.y then
+		return math.abs(v1.y - vector.y) < tolerance
 	end
-	return math.abs(((v2_x - v1_x) * (v1_y - vec_y)) - ((v1_x - vec_x) * (v2_y - v1_y))) / math.sqrt((v2_x - v1_x) * (v2_x - v1_x) + (v2_y - v1_y) * (v2_y - v1_y)) < tolerance
+	return math.abs(((v2.x - v1.x) * (v1.y - vector.y)) - ((v1.x - vector.x) * (v2.y - v1.y))) / math.sqrt((v2.x - v1.x) * (v2.x - v1.x) + (v2.y - v1.y) * (v2.y - v1.y)) < tolerance
 end
 
+---@param v1 Vector
+---@param v2 Vector
+---@param not_min boolean
+---@return number
 function vector.angle_between_vectors(v1, v2, not_min)
-	local angle = math.abs(math.deg(math.atan2(v1:GetX(), v1:GetY()) - math.atan2(v2:GetX(), v2:GetY())))
+	local angle = math.abs(math.deg(math.atan2(v1.x, v1.y) - math.atan2(v2.x, v2.y)))
 	if not not_min then
 		if angle > 180 then
 			return 360 - angle
@@ -45,6 +56,9 @@ function vector.angle_between_vectors(v1, v2, not_min)
 	return angle
 end
 
+---@param n any[]
+---@param k number
+---@return any[]
 function itertools.combinations(n, k)
 	local result = {}
     local function backtrack(start, combo)
@@ -62,6 +76,10 @@ function itertools.combinations(n, k)
     return result
 end
 
+---@param start_height number
+---@param max_height number
+---@param duration number
+---@return [number, number]
 function vector.calculate_arc(start_height, max_height, duration)
 	if max_height < start_height then
 		max_height = start_height+0.01
@@ -73,6 +91,11 @@ function vector.calculate_arc(start_height, max_height, duration)
 	return {4*max_height*duration_end/duration, 4*max_height*duration_end*duration_end/(duration*duration)}
 end
 
+---@param start_height number
+---@param max_height number
+---@param duration number
+---@param current number
+---@return number
 function vector.calculate_arc_for_time(start_height, max_height, duration, current)
 	local const1, const2 = table.unpack(vector.calculate_arc(start_height, max_height, duration))
 	current = math.min(current, duration)
@@ -80,6 +103,12 @@ function vector.calculate_arc_for_time(start_height, max_height, duration, curre
 	return math.max(start_height, height)
 end
 
+---@param start_height number
+---@param max_height number
+---@param current_height number
+---@param current number
+---@param duration_threshold number
+---@return number?
 function vector.calculate_arc_max_duration(start_height, max_height, current_height, current, duration_threshold)
 	local current_duration = math.max(0, current/2)
 	local max_durations = {}
@@ -94,6 +123,8 @@ function vector.calculate_arc_max_duration(start_height, max_height, current_hei
 	return max_durations[1] ~= nil and max_durations[1][1] or nil
 end
 
+---@param range number
+---@return Vector
 function vector.random_vector(range)
 	local angle = Angle(math.random(0, 360), math.random(0, 360), 0)
 	return Vector(0, 0, 0) + angle:GetForward() * range

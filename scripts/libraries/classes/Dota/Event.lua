@@ -1,5 +1,7 @@
+---@class CEvent: DBase
 local CEvent = class("CEvent", DBase)
 
+---@return string[]
 function CEvent.static:StaticAPIs()
 	return {
 		"AddListener",

@@ -1,3 +1,4 @@
+---@class KVLib
 local KVLib = class("KVLib")
 
 function KVLib:initialize()
@@ -8,12 +9,16 @@ function KVLib:initialize()
 	self:GetKV("items")
 end
 
+---@param name string
+---@return nil
 function KVLib:LoadKVfromAssetsJSON(name)
 	local f = assert(io.open("./././assets/data/"..name..".json", "r"))
 	self.loaded_kvs[name] = json:decode(f:read("*a"))
 	f:close()
 end
 
+---@param name string
+---@return nil
 function KVLib:LoadKVfromVPK(name)
 	-- local data = nil
 	-- local t = HTTP.Request("GET", self.VPK_BASE_URL..name, {
@@ -48,6 +53,8 @@ function KVLib:LoadKVfromVPK(name)
 	-- end
 end
 
+---@param name string
+---@return table
 function KVLib:GetKV(name)
 	if self.loaded_kvs[name] ~= nil then
 		return self.loaded_kvs[name]
@@ -61,6 +68,8 @@ function KVLib:GetKV(name)
 	return {}
 end
 
+---@param id integer
+---@return string?
 function KVLib:HeroIDToName(id)
 	local npc_heroes = self:GetKV("npc_heroes")
 	for heroname, kv in pairs(npc_heroes["DOTAHeroes"]) do
@@ -72,11 +81,15 @@ function KVLib:HeroIDToName(id)
 	end
 end
 
+---@param name string
+---@return string
 function KVLib:GetHeroAttribute(name)
 	local npc_heroes = self:GetKV("npc_heroes")
 	return npc_heroes["DOTAHeroes"][name]["AttributePrimary"] or self.npc_heroes["DOTAHeroes"]["npc_dota_hero_base"]["AttributePrimary"]
 end
 
+---@param name string
+---@return string[]
 function KVLib:GetAbilitySpecialKeys(name)
 	local kv = not CAbility:IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")
 	local ability = kv["DOTAAbilities"][name]
@@ -95,6 +108,21 @@ function KVLib:GetAbilitySpecialKeys(name)
 	return keys
 end
 
+---@param name string
+---@return Enum.AbilityBehavior
+function KVLib:GetAbilityBehavior(name)
+	local kv = not CAbility:IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")
+	local ability = kv["DOTAAbilities"][name]
+	if not ability or ability["AbilityBehavior"] == nil then
+		return Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NONE
+	end
+	return table.sum(table.map(string.split(ability["AbilityBehavior"], " | "), function(_, behavior)
+		return Enum.AbilityBehavior[behavior] or Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NONE
+	end))
+end
+
+---@param name string
+---@return table
 function KVLib:GetUnitKV(name)
 	local npc_heroes = self:GetKV("npc_heroes")
 	local npc_units = self:GetKV("npc_units")

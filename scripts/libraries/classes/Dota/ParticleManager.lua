@@ -1,9 +1,18 @@
+---@class CParticleManager: DBase
 local CParticleManager = class("CParticle", DBase)
 
+---@return boolean
 function CParticleManager.static:StaticAPIs()
 	return true
 end
 
+---@param position Vector
+---@param radius number
+---@param duration number
+---@param color [number, number, number]
+---@param dotted boolean?
+---@param filled boolean?
+---@return integer
 function CParticleManager.static:DrawAlert(position, radius, duration, color, dotted, filled)
 	local fx = self:Create("materials/alert_range.vpcf", Enum.ParticleAttachment.PATTACH_WORLDORIGIN, nil)
 	self:SetControlPoint(fx, 0, position)

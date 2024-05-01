@@ -1,9 +1,15 @@
+---@class CGridNav: DBase
 local CGridNav = class("CGridNav", DBase)
 
+---@return boolean
 function CGridNav.static:StaticAPIs()
 	return true
 end
 
+---@param origin Vector
+---@param target Vector
+---@param ignore_trees boolean?
+---@return number
 function CGridNav.static:GetPathLength(origin, target, ignore_trees)
 	local path = self:BuildPath(origin, target, ignore_trees ~= nil and ({ignore_trees} or {true})[1])
 	local distance = 0
@@ -13,6 +19,10 @@ function CGridNav.static:GetPathLength(origin, target, ignore_trees)
 	return distance
 end
 
+---@param origin Vector
+---@param target Vector
+---@param ignore_trees boolean?
+---@return number
 function CGridNav.static:GetPathDifficult(origin, target, ignore_trees)
 	return #self:BuildPath(origin, target, ignore_trees ~= nil and ({ignore_trees} or {true})[1])
 end

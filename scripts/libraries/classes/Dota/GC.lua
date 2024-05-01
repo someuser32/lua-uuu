@@ -1,5 +1,7 @@
+---@class CGC: DBase
 local CGC = class("CGC", DBase)
 
+---@return boolean
 function CGC.static:StaticAPIs()
 	return true
 end

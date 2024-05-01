@@ -1,3 +1,5 @@
+---@param t table
+---@return table
 function table.copy(t)
 	if type(t) ~= "table" then return {} end
 	local result = {}
@@ -19,6 +21,8 @@ end
 -- 	return no
 -- end
 
+---@param t boolean[]
+---@return boolean
 function table.any(t)
 	if type(t) ~= "table" then return false end
 	for k,v in pairs(t) do
@@ -29,6 +33,8 @@ function table.any(t)
 	return false
 end
 
+---@param t boolean[]
+---@return boolean
 function table.all(t)
 	if type(t) ~= "table" then return false end
 	for k,v in pairs(t) do
@@ -39,12 +45,18 @@ function table.all(t)
 	return #table.values(t) > 0
 end
 
+---@param t table
+---@param el any
+---@return integer
 function table.removeElement(t, el)
 	local pos = table.find(t, el)
 	table.remove(t, pos)
 	return pos
 end
 
+---@param t table
+---@param e any
+---@return any
 function table.find(t, e)
 	for k,v in pairs(t) do
 		if v == e then
@@ -53,6 +65,9 @@ function table.find(t, e)
 	end
 end
 
+---@param t table
+---@param e any
+---@return any
 function table.finddeep(t, e)
 	for k,v in pairs(t) do
 		if (type(v) ~= "table" or type(e) ~= "table") and v == e then
@@ -63,6 +78,9 @@ function table.finddeep(t, e)
 	end
 end
 
+---@param t table
+---@param e any
+---@return boolean
 function table.containsdeep(t, e)
 	for k,v in pairs(t) do
 		if (type(v) ~= "table" or type(e) ~= "table") and v == e then
@@ -74,6 +92,9 @@ function table.containsdeep(t, e)
 	return false
 end
 
+---@param t table
+---@param e any
+---@return boolean
 function table.contains(t, e)
 	for k, v in pairs(t) do
 		if v == e then
@@ -83,6 +104,9 @@ function table.contains(t, e)
 	return false
 end
 
+---@param t1 table
+---@param t2 table
+---@return boolean
 function table.equals(t1, t2, ignore_mt)
 	local ty1 = type(t1)
 	local ty2 = type(t2)
@@ -101,6 +125,9 @@ function table.equals(t1, t2, ignore_mt)
 	return true
 end
 
+---@param t1 table
+---@param t2 table
+---@return table
 function table.merge(t1, t2)
 	local t = table.copy(t1)
 	if type(t2) == "table" then
@@ -111,6 +138,9 @@ function table.merge(t1, t2)
 	return t
 end
 
+---@param t1 table
+---@param t2 table
+---@return table
 function table.combine(t1, t2)
 	local t = table.copy(t1)
 	for k, v in pairs(type(t2) == "table" and t2 or {t2}) do
@@ -119,6 +149,9 @@ function table.combine(t1, t2)
 	return t
 end
 
+---@param t table
+---@param fc function
+---@return table
 function table.filter(t, fc)
 	local tt = {}
 	for k,v in pairs(t) do
@@ -130,6 +163,8 @@ function table.filter(t, fc)
 	return tt
 end
 
+---@param t table
+---@return table
 function table.keys(t)
 	local keys = {}
 	for k,v in pairs(t) do
@@ -138,6 +173,8 @@ function table.keys(t)
 	return keys
 end
 
+---@param t table
+---@return table
 function table.values(t)
 	local values = {}
 	for k,v in pairs(t) do
@@ -146,10 +183,15 @@ function table.values(t)
 	return values
 end
 
+---@param t table
+---@return number
 function table.length(t)
 	return #table.values(t)
 end
 
+---@param t table
+---@param fc function
+---@return table
 function table.map(t, fc)
 	local tt = {}
 	for k,v in pairs(t) do
@@ -160,6 +202,9 @@ function table.map(t, fc)
 	return tt
 end
 
+---@param t table
+---@param typ any
+---@return boolean
 function table.alltypeof(t, typ)
 	for k, v in pairs(t) do
 		if type(v) ~= typ then
@@ -169,6 +214,10 @@ function table.alltypeof(t, typ)
 	return table.length(t) > 0
 end
 
+---@param t table
+---@param max_level number?
+---@param current_level number?
+---@return any
 function table.unzip(t, max_level, current_level)
 	local tt = {}
 	for k,v in pairs(t) do
@@ -181,4 +230,14 @@ function table.unzip(t, max_level, current_level)
 		end
 	end
 	return tt
+end
+
+---@param t table
+---@return number
+function table.sum(t)
+	local s = 0
+	for k,v in pairs(t) do
+		s = s + v
+	end
+	return s
 end

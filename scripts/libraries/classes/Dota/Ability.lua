@@ -22,8 +22,35 @@ local silence_abilities = {
 	"skywrath_mage_ancient_seal",
 }
 
+local not_linken_abilities = {
+	"item_urn_of_shadows",
+	"item_spirit_vessel",
+	"item_psychic_headband",
+	"item_bullwhip",
+	"dark_seer_ion_shell",
+	"tiny_toss",
+	"tusk_snowball",
+}
+
+local not_lotus_abilities = {
+	"item_urn_of_shadows",
+	"item_spirit_vessel",
+	"item_psychic_headband",
+	"item_bullwhip",
+	"dark_seer_ion_shell",
+	"morphling_replicate",
+	"rubick_spell_steal",
+	"grimstroke_soulbind",
+	"spectre_spectral_dagger",
+	"tiny_tree_toss",
+}
+
+---@class CAbility: CEntity
 local CAbility = class("CAbility", CEntity)
 
+---@param func_name string
+---@param val any
+---@return string | nil
 function CAbility.static:GetType(func_name, val)
 	if val == nil then
 		return nil
@@ -34,28 +61,37 @@ function CAbility.static:GetType(func_name, val)
 	return types[func_name] or CEntity.GetType(self, func_name, val)
 end
 
+---@return string[]
 function CAbility.static:ListAPIs()
 	return {
 		"GetAll",
 	}
 end
 
+---@return CAbility[]
 function CAbility.static:GetAll()
 	return self:StaticAPICall("GetAll", Abilities.GetAll)
 end
 
+---@return integer
 function CAbility.static:Count()
 	return self:StaticAPICall("Count", Abilities.Count)
 end
 
-function CAbility.static:Get()
-	return self:StaticAPICall("Get", Abilities.Get)
+---@param ent integer
+---@return CAbility?
+function CAbility.static:Get(ent)
+	return self:StaticAPICall("Get", Abilities.Get, ent)
 end
 
+---@param ent CAbility
+---@return boolean
 function CAbility.static:Contains(ent)
 	return self:StaticAPICall("Contains", Abilities.Contains, ent)
 end
 
+---@param name string
+---@return string
 function CAbility.static:GetAbilityNameIconPath(name)
 	local is_item = self:IsItemName(name)
 	if is_item then
@@ -64,14 +100,36 @@ function CAbility.static:GetAbilityNameIconPath(name)
 	return "panorama/images/spellicons/"..name.."_png.vtex_c"
 end
 
+---@param name string
+---@return boolean
 function CAbility.static:IsItemName(name)
 	return string.startswith(name, "item_")
 end
 
+---@param name string
+---@return boolean
 function CAbility.static:RequiresFullChannelName(name)
 	return not table.contains(cancellable_channel_abilities, name)
 end
 
+---@param name string
+---@return boolean
+function CAbility.static:IsTriggersAbsorb(name)
+	if table.contains(not_linken_abilities, name) then return false end
+	local behavior = KVLib:GetAbilityBehavior(name)
+	return (behavior & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET) == Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET
+end
+
+---@param name string
+---@return boolean
+function CAbility.static:IsTriggersReflect(name)
+	if table.contains(not_lotus_abilities, name) then return false end
+	local behavior = KVLib:GetAbilityBehavior(name)
+	return (behavior & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET) == Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET
+end
+
+---@param need_use_ability boolean?
+---@return string[]
 function CAbility.static:GetBKBs(need_use_ability)
 	local bkb_abilities = {
 		{"life_stealer_rage", true},
@@ -86,18 +144,22 @@ function CAbility.static:GetBKBs(need_use_ability)
 	return table.map(table.filter(bkb_abilities, function(_, bkb_info) return not need_use_ability or bkb_info[2] end), function(_, bkb_info) return bkb_info[1] end)
 end
 
+---@return boolean
 function CAbility:IsItem()
 	return false
 end
 
+---@return CNPC
 function CAbility:GetCaster()
 	return self:APIGetOwner()
 end
 
+---@return Enum.DrunkenBrawlerState
 function CAbility:GetDrunkenBrawlerState()
 	return DrunkenBrawler.GetState(self.ent)
 end
 
+---@return number
 function CAbility:GetDamageCooldown()
 	if CItem:IsBlink(self:GetName()) then
 		return self:GetLevelSpecialValueForFloat("blink_damage_cooldown")
@@ -105,6 +167,8 @@ function CAbility:GetDamageCooldown()
 	return -1
 end
 
+---@param last number?
+---@return boolean
 function CAbility:IsUsed(last)
 	last = last or 0.25
 	local max_cooldown = self:GetCooldownLength()
@@ -118,6 +182,7 @@ function CAbility:IsUsed(last)
 	return last_used ~= -1 and last_used < last
 end
 
+---@return string
 function CAbility:GetNameGeneral()
 	local name = self:GetName()
 	if CItem:IsBlink(name) then
@@ -128,58 +193,102 @@ function CAbility:GetNameGeneral()
 	return name
 end
 
+---@param general boolean?
+---@return string
 function CAbility:GetName(general)
 	return general and self:GetNameGeneral() or self:APIGetName()
 end
 
+---@param behavior Enum.AbilityBehavior
+---@return boolean
 function CAbility:HasBehavior(behavior)
 	return (self:GetBehavior() & behavior) == behavior
 end
 
+---@param flag Enum.TargetFlags
+---@return boolean
 function CAbility:HasFlag(flag)
 	return (self:GetTargetFlags() & flag) == flag
 end
 
+---@param team Enum.TeamNum
+---@return boolean
+function CAbility:CanTargetTeam(team)
+	local exceptions = {
+		"item_ward_observer",
+		"item_ward_sentry",
+		"item_ward_dispenser",
+	}
+	if table.contains(exceptions, self:GetName()) then
+		return true
+	end
+	local target_team = self:GetTargetTeam()
+	if target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_BOTH or target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_NONE then
+		return true
+	end
+	local localteam = self:GetCaster():GetTeamNum()
+	if localteam == team then
+		return target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_FRIENDLY
+	end
+	return target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_ENEMY
+end
+
+---@param position Vector
+---@param tolerance number
+---@return boolean
 function CAbility:CanCastToPosition(position, tolerance)
 	local caster = self:GetCaster()
 	local caster_position = caster:GetAbsOrigin()
 	return math.is_vector_between(position, caster_position, caster_position + caster:GetRotation():GetForward() * self:GetCastRange(), tolerance)
 end
 
+---@return CNPC
 function CAbility:GetTargetingEntity()
 	-- TODO: write function body
 end
 
+---@param KVs string[]
+---@return number
 function CAbility:GetOneOfKVs(KVs)
 	local ability_keys = KVLib:GetAbilitySpecialKeys(self:GetName(true))
 	for _, kv in pairs(KVs) do
 		if table.contains(ability_keys, kv) then
-			return self:GetLevelSpecialValueFor(kv)
+			return self:GetLevelSpecialValueForFloat(kv)
 		end
 	end
 	return 0
 end
 
+---@return number
 function CAbility:GetRadius()
 	return self:GetOneOfKVs({"radius", "whirling_radius"})
 end
 
+---@return number
 function CAbility:GetAOERadius()
-	return self:GetOneOfKVs({"radius"})
+	if self:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_AOE) then
+		return self:GetOneOfKVs({"radius", "observer_vision_range_tooltip", "true_sight_range"})
+	end
+	return 0
 end
 
+---@return number
 function CAbility:GetChannelTime()
 	return self:GetLevelSpecialValueForFloat("AbilityChannelTime")
 end
 
+---@return number
 function CAbility:GetAffectedCastRange()
 	return self:GetCastRange() + self:GetAOERadius()
 end
 
+---@return boolean
 function CAbility:PiercesBKB()
-	return self:GetImmunityType() == Enum.ImmunityTypes.SPELL_IMMUNITY_ENEMIES_YES or self:HasFlag(Enum.TargetFlags.DOTA_UNIT_TARGET_FLAG_MAGIC_IMMUNE_ENEMIES)
+	local immunity_type = self:GetImmunityType()
+	return immunity_type == Enum.ImmunityTypes.SPELL_IMMUNITY_ENEMIES_YES or self:HasFlag(Enum.TargetFlags.DOTA_UNIT_TARGET_FLAG_MAGIC_IMMUNE_ENEMIES) or immunity_type == Enum.ImmunityTypes.SPELL_IMMUNITY_NONE
 end
 
+---@return number
 function CAbility:GetEffectiveCooldown()
 	if invoker_crafts[self:GetName()] ~= nil and self:IsHidden() then
 		local invoke = self:GetCaster():GetAbility("invoker_invoke")
@@ -190,6 +299,7 @@ function CAbility:GetEffectiveCooldown()
 	return self:GetCooldown()
 end
 
+---@return boolean
 function CAbility:CanBeCrafted()
 	local craft = invoker_crafts[self:GetName()]
 	if craft == nil then return false end
@@ -213,6 +323,9 @@ function CAbility:CanBeCrafted()
 	return true
 end
 
+---@param callback function
+---@param context any?
+---@return number?
 function CAbility:Craft(callback, context)
 	local craft = invoker_crafts[self:GetName()]
 	if craft ~= nil and not self:IsHidden() then
@@ -267,6 +380,7 @@ function CAbility:Craft(callback, context)
 	end, self)
 end
 
+---@return number
 function CAbility:GetLevel()
 	if invoker_crafts[self:GetName()] ~= nil and not self:CanBeCrafted() then
 		return 0
@@ -274,10 +388,20 @@ function CAbility:GetLevel()
 	return self:APIGetLevel()
 end
 
+---@param position Vector
+---@param queue boolean?
+---@param showeffects boolean?
+---@param pushtocallback boolean?
+---@return nil
 function CAbility:SelectVectorPosition(position, queue, showeffects, pushtocallback)
 	CPlayer:GetLocal():PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_VECTOR_TARGET_POSITION, nil, position, self, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, self:GetCaster(), queue, showeffects, pushtocallback)
 end
 
+---@param target CNPC | Vector
+---@param queue boolean?
+---@param showeffects boolean?
+---@param pushtocallback boolean?
+---@return nil
 function CAbility:Cast(target, queue, showeffects, pushtocallback)
 	local targetType = target ~= nil and ((target.Length2D ~= nil and target.Dot2D ~= nil and target.ToAngle ~= nil) and "vector" or "target") or "nil"
 	local caster = self:GetCaster()
@@ -297,8 +421,74 @@ function CAbility:Cast(target, queue, showeffects, pushtocallback)
 	end
 end
 
+---@param target CNPC | Vector
+---@param queue boolean?
+---@param showeffects boolean?
+---@param pushtocallback boolean?
+---@param spell_reflect SpellReflect?
+---@param linken_breaker LinkenBreaker?
+---@param callback function?
+---@param callback_override boolean?
+---@param ignore_spell_reflect boolean?
+---@return boolean
+function CAbility:CastAndCheck(target, queue, showeffects, pushtocallback, spell_reflect, linken_breaker, callback, callback_override, ignore_spell_reflect)
+	local hero = self:GetCaster()
+	local ability_name = self:GetName()
+	if CAbility:IsTriggersReflect(ability_name) then
+		if not ignore_spell_reflect and spell_reflect ~= nil then
+			local used_save = SpellReflect:UseSaveIfNeed(self, target, table.unpack(spell_reflect))
+			if used_save == false then
+				return false
+			else
+				if type(used_save) ~= "boolean" then
+					Timers:CreateTimer(used_save[2] + 0.05 + (used_save[2] > 0 and CNetChannel:GetPingDelay() or 0), function()
+						hero:Stop()
+						self:CastAndCheck(target, queue, showeffects, pushtocallback, spell_reflect, linken_breaker, callback, callback_override, true)
+					end, self)
+					return true
+				end
+			end
+		end
+	end
+	if hero:IsChannellingAbility() then
+		hero:Stop()
+	end
+	function cast(isLinkenFree)
+		if callback then
+			callback(isLinkenFree)
+		end
+		if callback_override then return end
+		if not isLinkenFree then
+			return
+		end
+		local aoe_radius = self:GetAOERadius()
+		if ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) and aoe_radius > 0 then
+			local position = (target.Length2D ~= nil and target.Dot2D ~= nil and target.ToAngle ~= nil) and target or target:GetAbsOrigin()
+			local cast_range = self:GetCastRange()
+			local casterpos = hero:GetAbsOrigin()
+			local distance = (position-casterpos):Length2D()
+			if cast_range < distance and (cast_range+(aoe_radius/1.5)) >= distance then
+				local direction = (position-casterpos):Normalized()
+				direction.z = 0
+				position = CWorld:GetGroundPosition(casterpos + direction * cast_range)
+				target = position
+				return
+			end
+		end
+		self:Cast(target, queue, showeffects, pushtocallback)
+	end
+	if CAbility:IsTriggersAbsorb(ability_name) and linken_breaker ~= nil then
+		LinkenBreaker:BreakLinken(hero, target, linken_breaker, nil, ability_name, cast)
+	else
+		cast(true)
+	end
+	return true
+end
+
+---@return number
 function CAbility:GetCastRange()
 	local special = {
+		["item_seer_stone"] = 0
 	}
 	local keys = {
 		"spear_range",
@@ -315,6 +505,8 @@ function CAbility:GetCastRange()
 	return cast_range ~= 0 and cast_range or self:APIGetCastRange()
 end
 
+---@param target CNPC | Vector | nil
+---@return number
 function CAbility:GetProjectileSpeed(target)
 	local targetType = target ~= nil and ((target.Length2D ~= nil and target.Dot2D ~= nil and target.ToAngle ~= nil) and "vector" or "target") or "nil"
 	local special = {
@@ -367,6 +559,7 @@ function CAbility:GetProjectileSpeed(target)
 	return self:GetOneOfKVs(keys)
 end
 
+---@return boolean
 function CAbility:IsLinearProjectile()
 	if self:GetProjectileSpeed() == 0 then
 		return false
@@ -374,6 +567,7 @@ function CAbility:IsLinearProjectile()
 	return self:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_DIRECTIONAL) or self:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT)
 end
 
+---@return boolean
 function CAbility:IsTrackingProjectile()
 	if self:GetProjectileSpeed() == 0 then
 		return false
@@ -381,10 +575,12 @@ function CAbility:IsTrackingProjectile()
 	return self:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_UNIT_TARGET) or self:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET)
 end
 
+---@return boolean
 function CAbility:IsSilence()
 	return table.contains(silence_abilities, self:GetName(true))
 end
 
+---@return boolean
 function CAbility:CanCast()
 	local caster = self:GetCaster()
 	return self:GetLevel() > 0 and caster:IsAlive() and not caster:IsDisabled() and not caster:IsSilenced() and self:IsCastable(caster:GetMana(), false) and self:GetEffectiveCooldown() <= 0

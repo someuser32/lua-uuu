@@ -1,3 +1,4 @@
+---@class Timers
 local Timers = {
 	timers = {},
 	last_think = 0,
@@ -56,6 +57,10 @@ function Timers:HandleEventError(id, event, err)
 	print(id, event, err)
 end
 
+---@param callback function | table | number
+---@param args function | table
+---@param context any?
+---@return number
 function Timers:CreateTimer(callback, args, context)
 	if type(callback) == "function" then
 		--[[
@@ -115,12 +120,17 @@ function Timers:CreateTimer(callback, args, context)
 	return #Timers.timers
 end
 
+---@param id integer
+---@return nil
 function Timers:RemoveTimer(id)
 	Timers.timers[id] = nil
 	if Timers.runningTimer == id then
 		Timers.removeSelf = true
 	end
 end
+
+---@param killAll boolean?
+---@return nil
 function Timers:RemoveTimers(killAll)
 	local timers = {}
 	Timers.removeSelf = true

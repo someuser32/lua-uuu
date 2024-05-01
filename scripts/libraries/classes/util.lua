@@ -1,6 +1,8 @@
-local statics = {
-}
+local statics = {}
 
+---@param from any
+---@param to any
+---@return nil
 function _Classes_Inherite(from, to)
 	local function is_static(obj, key, val)
 		val = val or statics[obj]

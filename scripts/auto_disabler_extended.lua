@@ -32,6 +32,7 @@ function AutoDisablerExtended:initialize()
 		{"disruptor_glimpse", true, true},
 		{"shadow_demon_disruption", true, true},
 		{"lone_druid_savage_roar", false, false},
+		{"silencer_global_silence", false, false},
 	}
 
 	self.trigger_abilities = {
@@ -324,7 +325,6 @@ function AutoDisablerExtended:Trigger(ability, phase, caster)
 	local caster_pos = caster:GetAbsOrigin()
 	local local_hero = CHero:GetLocal()
 	local search_range = 2500
-	local enemy_is_bkb = caster:IsDebuffImmune()
 	for _, unit in pairs(CNPC:GetControllableUnits(caster_pos, search_range, true)) do
 		if (self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble()) then
 			if AntiOverwatch:CanUseAtCamera(unit, caster_pos, self.anti_overwatch_camera) then
@@ -452,7 +452,7 @@ function AutoDisablerExtended:GetUsableAbilities(hero, enemy_ability, enemy)
 								cast_range = ability:GetRadius() - range_buffer
 							end
 							if cast_range + range_buffer >= distance then
-								if not is_triggers_linken or ability_info["linken_breaker"] == nil or LinkenBreaker:CanUseAbility(hero, enemy, ability_info["linken_breaker"], nil, ability_name) then
+								if not is_triggers_linken or ability_info["linken_breaker"] == nil or LinkenBreaker:CanUseAbility(ability, enemy, ability_info["linken_breaker"], nil, ability_name) then
 									if not is_triggers_linken or ability_info["spell_reflect"] == nil or SpellReflect:CanUse(ability, enemy, ability_info["spell_reflect"][1], ability_info["spell_reflect"][2]) then
 										table.insert(usable_abilities, ability)
 									end

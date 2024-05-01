@@ -1,5 +1,6 @@
 local loaded_images = {}
 
+---@class CRenderer: DBase
 local CRenderer = class("CRenderer", DBase)
 
 CRenderer.static.SIDE_NOTIFICATION_MESSAGE_ARROW = 0
@@ -13,16 +14,22 @@ CRenderer.static.SIDE_NOTIFICATION_SOUND_ALERT = 1
 CRenderer.static.SIDE_NOTIFICATION_SOUND_BUY = 2
 CRenderer.static.SIDE_NOTIFICATION_SOUND_YOINK = 3
 
+---@return boolean
 function CRenderer.static:StaticAPIs()
 	return true
 end
 
+---@param id any
+---@param path string
+---@return integer
 function CRenderer.static:LoadImageWithID(id, path)
 	local image = self:StaticAPICall("LoadImage", Renderer.LoadImage, path)
 	loaded_images[id] = image
 	return image
 end
 
+---@param path string
+---@return integer
 function CRenderer.static:GetOrLoadImage(path)
 	local image = loaded_images[path]
 	if image ~= nil then
@@ -32,14 +39,28 @@ function CRenderer.static:GetOrLoadImage(path)
 	return image
 end
 
+---@param x integer
+---@param y integer
+---@param w integer
+---@param h integer
+---@return nil
 function CRenderer.static:DrawOutlineRectCentered(x, y, w, h)
 	return self:StaticAPICall("DrawOutlineRect", Renderer.DrawOutlineRect, x-w/2, y-h/2, w, h)
 end
 
+---@param x integer
+---@param y integer
+---@param w integer
+---@param h integer
+---@return nil
 function CRenderer.static:DrawFilledRectCentered(x, y, w, h)
 	return self:StaticAPICall("DrawFilledRect", Renderer.DrawFilledRect, x-w/2, y-h/2, w, h)
 end
 
+---@param font integer
+---@param y integer
+---@param text string
+---@return nil
 function CRenderer.static:DrawTextCentered(font, x, y, text)
 	local w, h = CRenderer:GetTextSize(font, text)
 	return self:StaticAPICall("DrawText", Renderer.DrawText, font, x - w/2, y - h/2, text)

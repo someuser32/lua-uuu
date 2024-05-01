@@ -7,6 +7,7 @@ function CBaseScriptAPI:initialize()
 	self.inventories_cache = {}
 	self.visibility_cache = {}
 	self.visibility_cache_pre = {}
+	self.particles_cache = {}
 	self.tick = 0
 	self.draw_tick = 0
 	self._dt_update = CGameRules:GetGameTime()
@@ -19,6 +20,9 @@ end
 function CBaseScriptAPI:register_instance(instance)
 	table.insert(self.instances, instance)
 	local this = self
+	instance.instance.GetParticleInfo = instance.instance.GetParticleInfo or function(self, index)
+		return this.particles_cache[index]
+	end
 	instance.instance.WasHeroVisible = instance.instance.WasHeroVisible or function(self, hero)
 		local visible = this.visibility_cache_pre[hero:GetIndex()]
 		return (visible ~= nil and {visible} or {false})[1]
@@ -67,6 +71,10 @@ function CBaseScriptAPI:get_listener_callbacks_instances()
 		"OnNPCUsedAbility",
 		"OnNPCPhaseAbility",
 		"OnNPCLostItem",
+		"OnEntityHurtEvent",
+		"OnEntityKilledEvent",
+		"OnParticle",
+		"OnParticleDestroyed",
 	}
 	local instances = {}
 	for _, instance in pairs(self.instances) do
@@ -149,6 +157,7 @@ function CBaseScriptAPI:OnFrame()
 end
 
 function CBaseScriptAPI:OnUpdate()
+	local now = CGameRules:GetGameTime()
 	if self.tick % 2 == 0 then
 		local listeners = self:get_listeners()
 		if #table.values(listeners) > 0 then
@@ -187,8 +196,16 @@ function CBaseScriptAPI:OnUpdate()
 			end
 		end
 	end
+	if self.tick % 5 == 0 then
+		for index, particle in pairs(table.copy(self.particles_cache)) do
+			if not particle["fired_callback"] and now-particle["created_at"] >= 0.05 then
+				self.particles_cache[index]["fired_callback"] = true
+				self:fire_listener_callback("OnParticle", table.merge({index=index}, particle))
+			end
+		end
+	end
 	self.tick = self.tick + 1
-	self._dt_update = CGameRules:GetGameTime()
+	self._dt_update = now
 end
 
 function CBaseScriptAPI:get_hero_texts()
@@ -209,7 +226,6 @@ end
 function CBaseScriptAPI:OnDraw()
 	self.draw_tick = self.draw_tick + 1
 	local texts = self:get_hero_texts()
-	-- DeepPrintTable(texts)
 	if #texts > 0 then
 		local hero = CHero:GetLocal()
 		local offset_z = hero:GetHealthBarOffset()
@@ -238,6 +254,70 @@ function CBaseScriptAPI:OnFireEventClient(data)
 		self:fire_listener_callback("OnEntityHurtEvent", event:GetInt("entindex_killed"), event:GetInt("entindex_attacker"), event:GetInt("entindex_inflictor"), event:GetFloat("damage"))
 	elseif data["name"] == "entity_killed" then
 		self:fire_listener_callback("OnEntityKilledEvent", event:GetInt("entindex_killed"), event:GetInt("entindex_attacker"), event:GetInt("entindex_inflictor"))
+	end
+end
+
+function CBaseScriptAPI:OnParticleCreate(particle)
+	self.particles_cache[particle["index"]] = {
+		name=particle["fullName"],
+		shortname=particle["name"],
+		attach_type=particle["attachType"],
+		entity=particle["entity"] ~= nil and CNPC:new(particle["entity"]) or nil,
+		entity_id=particle["entity_id"],
+		entity_for_modifiers=particle["entityForModifiers"] ~= nil and CNPC:new(particle["entityForModifiers"]) or nil,
+		entity_for_modifiers_id=particle["entity_for_modifiers_id"],
+		name_index=particle["particleNameIndex"],
+		hash=particle["hash"],
+		control_points={},
+		created_at=CGameRules:GetGameTime(),
+		fired_callback=false,
+	}
+end
+
+function CBaseScriptAPI:OnParticleUpdate(particle)
+	if self.particles_cache[particle["index"]] ~= nil then
+		local control_point = {position=particle["position"]}
+		if self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]] == nil then
+			self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]] = {control_point}
+		else
+			table.insert(self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]], control_point)
+		end
+	end
+end
+
+function CBaseScriptAPI:OnParticleUpdateFallback(particle)
+	if self.particles_cache[particle["index"]] ~= nil then
+		local control_point = {position=particle["position"]}
+		if self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]] == nil then
+			self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]] = {control_point}
+		else
+			table.insert(self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]], control_point)
+		end
+	end
+end
+
+function CBaseScriptAPI:OnParticleUpdateEntity(particle)
+	if self.particles_cache[particle["index"]] ~= nil then
+		local control_point = {
+			position=particle["position"],
+			attach_type=particle["attachType"],
+			entity=particle["entity"] ~= nil and CEntity:new(particle["entity"]) or nil,
+			entity_id=particle["entIdx"],
+			attachment_name=particle["attachmentName"],
+			include_wearables=particle["includeWearables"],
+		}
+		if self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]] == nil then
+			self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]] = {control_point}
+		else
+			table.insert(self.particles_cache[particle["index"]]["control_points"][particle["controlPoint"]], control_point)
+		end
+	end
+end
+
+function CBaseScriptAPI:OnParticleDestroy(particle)
+	if self.particles_cache[particle["index"]] ~= nil then
+		self:fire_listener_callback("OnParticleDestroyed", table.copy(self.particles_cache[particle["index"]]), particle["destroyImmediately"])
+		self.particles_cache[particle["index"]] = nil
 	end
 end
 
@@ -277,8 +357,8 @@ return function(basescript)
 		"OnMenuOptionChange",
 		"OnGameStart",
 		"OnGameEnd",
-		"OnScriptLoad",
-		"OnScriptUnload",
+		"OnScriptLoad", -- NOTE: does not work?
+		"OnScriptUnload", -- NOTE: does not work?
 		"OnChatEvent",
 		"OnOverHeadEvent",
 		"OnGCMessage",
@@ -290,7 +370,9 @@ return function(basescript)
 	for _, callback in pairs(callbacks) do
 		ScriptAPI[callback] = function(...)
 			local args = {...}
-			local status, base_result = pcall(function() return BaseScriptAPI:callback(ScriptAPI, callback, table.unpack(args)) end)
+			-- local status, base_result = pcall(function() return BaseScriptAPI:callback(ScriptAPI, callback, table.unpack(args)) end)
+			local base_result = BaseScriptAPI:callback(ScriptAPI, callback, table.unpack(args))
+			local status = true
 			if status and base_result ~= nil then
 				return base_result
 			elseif not status then

@@ -92,7 +92,7 @@ function IPos:OnDraw()
 		end
 	end
 	if active_ability ~= nil then
-		if (active_ability:GetName() == "item_ward_sentry") or (active_ability:GetName() == "item_ward_dispenser") then
+		if (active_ability:GetName() == "item_ward_sentry") or (active_ability:GetName() == "item_ward_dispenser" and not active_ability:GetToggleState()) then
 			for _, position in pairs(self.ward_positions) do
 				local x, y, visible = CRenderer:WorldToScreen(position)
 				if visible then

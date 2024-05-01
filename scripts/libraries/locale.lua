@@ -1,3 +1,4 @@
+---@class LocaleLib
 local LocaleLib = class("LocaleLib")
 
 function LocaleLib:initialize()
@@ -7,10 +8,15 @@ function LocaleLib:initialize()
 	self.attributes = {["DOTA_ATTRIBUTE_STRENGTH"]="Strength", ["DOTA_ATTRIBUTE_AGILITY"]="Agility", ["DOTA_ATTRIBUTE_INTELLECT"]="Intellect", ["DOTA_ATTRIBUTE_ALL"]="Universal"}
 end
 
+---@param name string
+---@return string
 function LocaleLib:LocalizeHeroName(name)
 	return self.hero_names[name] or string.capitalize(string.gsub(string.sub(name, 15), "_", " "), true)
 end
 
+---@param name string
+---@param include_owner boolean?
+---@return string | string[]
 function LocaleLib:LocalizeAbilityName(name, include_owner)
 	local ability_name = self.ability_names[name] or string.capitalize(string.gsub(string.gsub(name, "item_", ""), "_", " "), true)
 	if include_owner then
@@ -32,6 +38,8 @@ function LocaleLib:LocalizeAbilityName(name, include_owner)
 	return ability_name
 end
 
+---@param name string
+---@return string
 function LocaleLib:LocalizeAttribute(name)
 	return self.attributes[name] or string.capitalize(string.gsub(string.sub(name, 16), "_", " "))
 end
