@@ -224,7 +224,7 @@ function ShowMeMoreDestinations:OnEntityCreate(entity)
 			if npc:GetUnitName() == "npc_dota_techies_mines" then
 				self.sticky_mine = npc
 				self.last_pos = npc:GetAbsOrigin()
-				self.last_z = math.floor(self.last_pos:GetZ())
+				self.last_z = math.floor(self.last_pos.z)
 				local old_pos = npc:GetAbsOrigin()
 				local old_time = CGameRules:GetGameTime()
 				local old_speed = 0

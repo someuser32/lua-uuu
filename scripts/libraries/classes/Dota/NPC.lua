@@ -421,7 +421,7 @@ function CNPC:GetUsableSpellAbsorbs()
 end
 
 ---@param ability_names string[] | [string, number, boolean][]
----@param target CNPC
+---@param target CNPC | CEntity
 ---@param linken_breaker LinkenBreaker | function?
 ---@param spell_reflect SpellReflect | function?
 ---@param custom_filter function?
@@ -430,8 +430,8 @@ function CNPC:GetUsableAbilities(ability_names, target, linken_breaker, spell_re
 	local distance = (target:GetAbsOrigin() - self:GetAbsOrigin()):Length2D()
 	local target_team = target:GetTeamNum()
 	local is_ally = target_team == self:GetTeamNum()
-	local is_target_bkb = target:IsDebuffImmune()
-	local is_target_absorbs = target:IsAbsorbsSpells()
+	local is_target_bkb = (target.IsDebuffImmune ~= nil and {target:IsDebuffImmune()} or {false})[1]
+	local is_target_absorbs = (target.IsAbsorbsSpells ~= nil and {target:IsAbsorbsSpells()} or {false})[1]
 	local usable_abilities = {}
 	for _, ability_info in pairs(ability_names) do
 		local ability_name = type(ability_info) == "table" and ability_info[1] or ability_info
@@ -456,9 +456,9 @@ function CNPC:GetUsableAbilities(ability_names, target, linken_breaker, spell_re
 						end
 						if cast_range == 0 or (cast_range + (ability:GetAOERadius() / 1.5)) >= distance then
 							local ability_linken_breaker = (type(linken_breaker) == "function" and {linken_breaker(ability)} or {linken_breaker})[1]
-							if is_ally or (not is_triggers_linken or LinkenBreaker:CanUseAbility(ability, target, ability_linken_breaker, nil, ability_name)) then
+							if is_ally or (not ability_linken_breaker or not is_triggers_linken or LinkenBreaker:CanUseAbility(ability, target, ability_linken_breaker, nil, ability_name)) then
 								local ability_spell_reflect = (type(spell_reflect) == "function" and {spell_reflect(ability)} or {spell_reflect})[1]
-								if is_ally or (not is_triggers_linken or SpellReflect:CanUse(ability, target, ability_spell_reflect[1], ability_spell_reflect[2])) then
+								if is_ally or (not ability_spell_reflect or not is_triggers_linken or SpellReflect:CanUse(ability, target, ability_spell_reflect[1], ability_spell_reflect[2])) then
 									table.insert(usable_abilities, ability)
 								end
 							end

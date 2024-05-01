@@ -105,7 +105,7 @@ function SideNotifications:SendNotification(notification_type, notification_info
 	if notification_type == "twin_gate" then
 		if table.length(notification_info) < 3 then return end
 		if self.twin_gate_enable:Get() then
-			local position = notification_info[3]:GetY() < 0 and "BOT" or "TOP"
+			local position = notification_info[3].y < 0 and "BOT" or "TOP"
 			if not notification_info[1]:IsVisible() then
 				CRenderer:DrawSideNotification({
 					image1={
@@ -129,7 +129,7 @@ function SideNotifications:SendNotification(notification_type, notification_info
 	elseif notification_type == "twin_gate_cancel" then
 		if table.length(notification_info) < 3 then return end
 		if self.twin_gate_enable:Get() then
-			local position = notification_info[3]:GetY() < 0 and "BOT" or "TOP"
+			local position = notification_info[3].y < 0 and "BOT" or "TOP"
 			CRenderer:DrawSideNotification({
 				image1={
 					path=GetHeroTopbarIconPath(notification_info[1]:GetUnitName()),

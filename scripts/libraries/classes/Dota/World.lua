@@ -9,7 +9,7 @@ end
 ---@param position Vector
 ---@return Vector
 function CWorld.static:GetGroundPosition(position)
-	return Vector(position:GetX(), position:GetY(), self:GetGroundZ(position))
+	return Vector(position.x, position.y, self:GetGroundZ(position))
 end
 
 _Classes_Inherite({"World"}, CWorld)

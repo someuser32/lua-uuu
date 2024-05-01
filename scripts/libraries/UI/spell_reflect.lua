@@ -30,6 +30,9 @@ function SpellReflect:CanUse(ability, enemy, option, absorb_option, bkb_option)
 	if not CAbility:IsTriggersReflect(ability:GetName()) then
 		return true
 	end
+	if not enemy.IsReflectsSpells then
+		return true
+	end
 	local behavior = option:GetIndex()
 	local caster = ability:GetCaster()
 	if behavior == 1 then

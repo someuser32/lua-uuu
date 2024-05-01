@@ -69,6 +69,9 @@ function LinkenBreaker:CanUseAbility(ability, enemy, option, range_buffer, excep
 	if not CAbility:IsTriggersAbsorb(ability:GetName()) then
 		return true
 	end
+	if not enemy.IsLinkensProtected then
+		return true
+	end
 	if not enemy:IsLinkensProtected() and not enemy:IsMirrorProtected() then
 		return true
 	end

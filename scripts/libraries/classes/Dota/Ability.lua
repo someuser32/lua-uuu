@@ -223,7 +223,7 @@ function CAbility:CanTargetTeam(team)
 		return true
 	end
 	local target_team = self:GetTargetTeam()
-	if target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_BOTH or target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_NONE then
+	if table.contains({Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_BOTH, Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_NONE, Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_CUSTOM}, target_team) then
 		return true
 	end
 	local localteam = self:GetCaster():GetTeamNum()

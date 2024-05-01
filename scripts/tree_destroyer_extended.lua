@@ -20,11 +20,11 @@ function TreeDestroyerExtended:initialize()
 	}
 
 	local destroy_trees = {
-		{"item_branches", true, false},
-		{"furion_sprout", true, true},
-		{"hoodwink_acorn_shot", true, false},
-		{"hoodwink_bushwhack", true, false},
-		{"monkey_king_tree_dance", true, false},
+		{"item_branches", true},
+		{"furion_sprout", true},
+		{"hoodwink_acorn_shot", true},
+		{"hoodwink_bushwhack", true},
+		{"monkey_king_tree_dance", true},
 	}
 
 	self.furion_sprout_behavior = {
@@ -170,14 +170,14 @@ function TreeDestroyerExtended:OnUpdate()
 					local start_position = info["start_position"]
 					local is_from_ground = info["from_ground"]
 					local start_time = info["start_time"]
-					local start_height = start_position:GetZ()
+					local start_height = start_position.z
 
 					if not is_from_ground then
 						start_height = start_height + self.monkey_king_tree_offset_z
 					end
 
 					local max_height = start_height + self:GetTreeDanceMaxHeight(ent)
-					local current_height = ent:GetAbsOrigin():GetZ()
+					local current_height = ent:GetAbsOrigin().z
 					local elapsed_time = CGameRules:GetGameTime() - start_time
 					local max_capable_duration = self:GetTreeDanceMaxDuration(ent)
 					local max_duration = vector.calculate_arc_max_duration(start_height, max_height, current_height, elapsed_time, max_capable_duration)
@@ -300,7 +300,7 @@ function TreeDestroyerExtended:OnParticleUpdate(particle)
 		if particle["controlPoint"] == 0 then
 			self.used_particles[particle["index"]]["position"] = particle["position"]
 		elseif particle["controlPoint"] == 1 then
-			self.used_particles[particle["index"]]["radius"] = particle["position"]:GetY()
+			self.used_particles[particle["index"]]["radius"] = particle["position"].y
 		end
 	end
 	if self.used_particles[particle["index"]]["position"] ~= nil and self.used_particles[particle["index"]]["radius"] ~= nil then
@@ -365,6 +365,11 @@ function TreeDestroyerExtended:OnEntityCreate(entity)
 	end
 end
 
+---@param entities CEntity[]
+---@param position Vector
+---@param tree_type string
+---@param owner CNPC
+---@return boolean
 function TreeDestroyerExtended:TriggerDestroyTrees(entities, position, tree_type, owner)
 	if not self.tree_destroyer_enable:Get() then return false end
 	if not self.tree_destroyer_cut_targets[tree_type.."_enable"]:Get() then return false end
@@ -398,6 +403,11 @@ function TreeDestroyerExtended:TriggerDestroyTrees(entities, position, tree_type
 	return false
 end
 
+---@param entities CEntity[]
+---@param caster CNPC
+---@param tree_type string
+---@param owner CNPC
+---@return boolean
 function TreeDestroyerExtended:DestroyTrees(entities, caster, tree_type, owner)
 	local tree = entities[1]
 	if tree_type == "furion_sprout" then
@@ -416,7 +426,10 @@ function TreeDestroyerExtended:DestroyTrees(entities, caster, tree_type, owner)
 	if not AntiOverwatch:CanUseAtCamera(caster, tree:GetAbsOrigin(), self.anti_overwatch_camera) then
 		return false
 	end
-	local ability = self:GetUsableAbilities(caster, tree, tree_type)[1]
+	local range_buffer = self.tree_destroyer_cut_targets[tree_type.."_range_buffer"]:Get()
+	local ability = caster:GetUsableAbilities(table.map(self.tree_destroyer_cut_targets[tree_type.."_destroy"]:Get(), function(_, ability_name)
+		return {ability_name, range_buffer, nil}
+	end), tree, nil, nil, self:UsableAbilitiesFilter(tree, tree_type))[1]
 	if not ability then
 		return false
 	end
@@ -467,7 +480,7 @@ function TreeDestroyerExtended:CutDownTree(tree, ability)
 	end
 	ability:Cast(tree)
 	if ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) then
-		-- weird behavior, without this it sometimes does not use ability (when player spams move order)
+		-- HACK: weird behavior, without this it sometimes does not use ability (when player spams move order)
 		ability:Cast(tree)
 	end
 	local channel_delay = ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_CHANNELLED) and ability:GetChannelTime() or 0
@@ -478,6 +491,9 @@ function TreeDestroyerExtended:CutDownTree(tree, ability)
 	return (not ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) and hero:GetTimeToFacePosition(treePos) * 1.5 or 0) + (ability:GetCastPoint() * 1.5) + channel_delay
 end
 
+---@param destroy_ability CAbility
+---@param tree_type string
+---@param owner CNPC
 function TreeDestroyerExtended:SendNotification(destroy_ability, tree_type, owner)
 	if self.tree_destroyer_notifications:Get() then
 		local owner_image = CRenderer:GetOrLoadImage(GetHeroIconPath(owner:GetUnitName()))
@@ -492,6 +508,9 @@ function TreeDestroyerExtended:SendNotification(destroy_ability, tree_type, owne
 	end
 end
 
+---@param hero CNPC
+---@param center Vector
+---@return CEntity
 function TreeDestroyerExtended:IsInsideFurionSprouts(hero, center)
 	local heroPos = hero:GetAbsOrigin()
 	local sprouts = table.values(table.filter(CTempTree:FindInRadius(center, 150+64), function(_, tree) return math.abs(150-(tree:GetAbsOrigin()-center):Length2D()) < 5 end))
@@ -502,6 +521,9 @@ function TreeDestroyerExtended:IsInsideFurionSprouts(hero, center)
 	return table.all(table.map(sprouts, function(_, sprout) return table.contains(trees, sprout) end))
 end
 
+---@param entities CEntity[]
+---@param hero CNPC
+---@return CEntity
 function TreeDestroyerExtended:GetBestTreeForFurionSprout(entities, hero)
 	local heroPos = hero:GetAbsOrigin()
 	local direction = hero:GetRotation():GetForward()
@@ -609,46 +631,37 @@ function TreeDestroyerExtended:GetBestTreeForFurionSprout(entities, hero)
 	return entities[1]
 end
 
-function TreeDestroyerExtended:GetUsableAbilities(hero, tree, tree_type, exceptions)
-	local usable_abilities = {}
-	local abilities = self.tree_destroyer_cut_targets[tree_type.."_destroy"]:Get()
-	local range_buffer = self.tree_destroyer_cut_targets[tree_type.."_range_buffer"]:Get()
-	local heroPos = hero:GetAbsOrigin()
-	local treePos = tree:GetAbsOrigin()
-	local distance = (treePos - heroPos):Length2D()
-	local function CanUseSkill(ability)
+---@param target CEntity
+---@param tree_type string
+---@return function
+function TreeDestroyerExtended:UsableAbilitiesFilter(target, tree_type)
+	---@param ability CAbility
+	---@return boolean | number | nil
+	return function(ability)
+		local caster = ability:GetCaster()
 		local ability_name = ability:GetName()
 		if ability_name == "item_tango" then
 			local tango_usage = self.tree_destroyer_cut_targets[tree_type.."_tango_usage"]:get_selected_index()
 			if tango_usage == 1 then
 				return true
 			elseif tango_usage == 2 then
-				return not hero:HasModifier("modifier_tango_heal")
+				return not caster:HasModifier("modifier_tango_heal")
 			elseif tango_usage == 3 then
-				return not hero:HasModifier("modifier_tango_heal") or #self:GetUsableAbilities(hero, tree, tree_type, ability_name) == 0
+				local range_buffer = self.tree_destroyer_cut_targets[tree_type.."_range_buffer"]:Get()
+				local abilities = table.map(table.values(table.filter(self.tree_destroyer_cut_targets[tree_type.."_destroy"]:Get(), function(_, abilityname)
+					return abilityname ~= ability_name
+				end)), function(_, ability_name)
+					return {ability_name, range_buffer, nil}
+				end)
+				return not caster:HasModifier("modifier_tango_heal") or #caster:GetUsableAbilities(abilities, tree, self:UsableAbilitiesFilter(target, tree_type)) == 0
 			end
 		end
 		return true
 	end
-	for _, ability_name in pairs(abilities) do
-		if not ((type(exceptions) == "table" and table.contains(exceptions, ability_name)) or (type(exceptions) == "string" and ability_name == exceptions)) then
-			local ability = hero:GetAbilityOrItemByName(ability_name)
-			if ability ~= nil and ability:CanCast() then
-				local cast_range = ability:GetCastRange()
-				if cast_range == 0 then
-					cast_range = ability:GetRadius() - range_buffer
-				end
-				if cast_range + range_buffer >= distance then
-					if CanUseSkill(ability) then
-						table.insert(usable_abilities, ability)
-					end
-				end
-			end
-		end
-	end
-	return usable_abilities
 end
 
+---@param hero CNPC
+---@return boolean
 function TreeDestroyerExtended:IsSafeToMove(hero)
 	if hero:HasModifier("modifier_bloodseeker_rupture") then
 		return false
