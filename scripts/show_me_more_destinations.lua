@@ -270,9 +270,9 @@ function ShowMeMoreDestinations:DrawAlert(alert, position, radius, duration)
 	if not self.enable:Get() then return end
 	local alert_info = self.alerts_info[alert]
 	if alert == "hoodwink_bushwhack" then
-		local trees = table.combine(CTree:FindInRadius(position, radius, true), CTempTree:FindInRadius(position, radius))
+		local trees = table.combine(CTree:FindInRadius(position, radius+32, true), CTempTree:FindInRadius(position, radius+32))
 		for _, tree in pairs(trees) do
-			table.insert(self.drawings, {CGameRules:GetGameTime() + duration + 0.1, alert, "circle_outlined", tree:GetAbsOrigin(), radius, 16, {15, 255, 15}})
+			table.insert(self.drawings, {CGameRules:GetGameTime() + duration + 0.1, alert, "circle_outlined", tree:GetAbsOrigin(), radius, 10, {15, 255, 15}})
 		end
 	end
 	return CParticleManager:DrawAlert(position, radius, duration + 0.1, alert_info["color"] or {255, 255, 255}, true)

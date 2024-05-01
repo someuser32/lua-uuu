@@ -111,7 +111,6 @@ function TreeDestroyerExtended:initialize()
 	UILib:SetTabIcon(self.path, "~/MenuIcons/forest.png")
 
 	self.used_items = {}
-	self.used_particles = {}
 	self.monkey_king_tree_dance_particles = {}
 
 	self.listeners = {}
@@ -219,24 +218,27 @@ function TreeDestroyerExtended:OnUpdate()
 	end
 end
 
-function TreeDestroyerExtended:OnParticleCreate(particle)
+function TreeDestroyerExtended:OnParticle(particle)
 	if particle["entity"] ~= nil then
-		local ent = CNPC:new(particle["entity"])
+		local ent = particle["entity"]
 		if ent:GetTeamNum() ~= CPlayer:GetLocalTeam() then
-			if particle["name"] == "monkey_king_jump_trail" then
-				if self.monkey_king_tree_dance_particles[particle["entity_id"]] == nil then
-					self.monkey_king_tree_dance_particles[particle["entity_id"]] = {}
+			if particle["shortname"] == "monkey_king_jump_trail" then
+				if particle["control_points"][1] ~= nil then
+					if self.monkey_king_tree_dance_particles[particle["entity_id"]] == nil then
+						self.monkey_king_tree_dance_particles[particle["entity_id"]] = {}
+					end
+					self.monkey_king_tree_dance_particles[particle["entity_id"]]["fx"] = particle["index"]
+					self.monkey_king_tree_dance_particles[particle["entity_id"]]["start_time"] = CGameRules:GetGameTime()
+					self.monkey_king_tree_dance_particles[particle["entity_id"]]["start_position"] = particle["control_points"][1][1]["position"]
 				end
-				self.monkey_king_tree_dance_particles[particle["entity_id"]]["fx"] = particle["index"]
-				self.monkey_king_tree_dance_particles[particle["entity_id"]]["start_time"] = CGameRules:GetGameTime()
 				return
-			elseif particle["name"] == "monkey_king_jump_launch_ring" then
+			elseif particle["shortname"] == "monkey_king_jump_launch_ring" then
 				if self.monkey_king_tree_dance_particles[particle["entity_id"]] == nil then
 					self.monkey_king_tree_dance_particles[particle["entity_id"]] = {}
 				end
 				self.monkey_king_tree_dance_particles[particle["entity_id"]]["from_ground"] = true
 				return
-			elseif particle["name"] == "monkey_king_jump_treelaunch_ring" then
+			elseif particle["shortname"] == "monkey_king_jump_treelaunch_ring" then
 				if self.monkey_king_tree_dance_particles[particle["entity_id"]] == nil then
 					self.monkey_king_tree_dance_particles[particle["entity_id"]] = {}
 				end
@@ -251,116 +253,84 @@ function TreeDestroyerExtended:OnParticleCreate(particle)
 		["particles/units/heroes/hero_hoodwink/hoodwink_acorn_shot_tree.vpcf"] = "hoodwink_acorn_shot",
 		["particles/units/heroes/hero_hoodwink/hoodwink_bushwhack_projectile.vpcf"] = "hoodwink_bushwhack",
 	}
-	local tree_type = tree_types[particle["fullName"]]
-	if tree_type == nil then return end
-	local owner = nil
-	local trees = {}
-	if particle["entityForModifiers"] ~= nil then
-		owner = CNPC:new(particle["entityForModifiers"])
-	elseif tree_type == "item_branches" then
-		self.used_items[particle["entity_id"]] = {tree_type=tree_type, time=CGameRules:GetGameTime()}
-		return
-	end
-	if owner == nil then
-		for _, enemy in pairs(CHero:GetEnemies()) do
-			local ability = enemy:GetAbilityOrItemByName(tree_type)
-			if ability ~= nil then
-				owner = enemy
-				break
-			end
-		end
-	end
-	if owner == nil or owner:GetTeamNum() == CPlayer:GetLocalTeam() then return end
-	if particle["entity_id"] ~= nil and particle["entity_id"] ~= -1 then
-		local ent = CEntity:Get(particle["entity_id"])
-		if ent:IsEntity() then
-			table.insert(trees, ent)
-		end
-	end
-	if #trees == 0 then
-		self.used_particles[particle["index"]] = {tree_type=tree_type, owner=owner, position=nil, radius=nil, entity_id=particle["entity_id"]}
-		return
-	end
-end
-
-function TreeDestroyerExtended:OnParticleUpdateEntity(particle)
-	if self.monkey_king_tree_dance_particles[particle["entIdx"]] == nil then return end
-	if self.monkey_king_tree_dance_particles[particle["entIdx"]]["fx"] ~= particle["index"] then return end
-	self.monkey_king_tree_dance_particles[particle["entIdx"]]["start_position"] = particle["position"]
-end
-
-function TreeDestroyerExtended:OnParticleUpdate(particle)
-	if self.used_particles[particle["index"]] == nil then return end
-	if self.used_particles[particle["index"]]["tree_type"] == "hoodwink_bushwhack" then
-		if particle["controlPoint"] == 1 then
-			self.used_particles[particle["index"]]["position"] = particle["position"]
-			self.used_particles[particle["index"]]["radius"] = self:GetBushwhackRadius(self.used_particles[particle["index"]]["owner"])
-		end
-	else
-		if particle["controlPoint"] == 0 then
-			self.used_particles[particle["index"]]["position"] = particle["position"]
-		elseif particle["controlPoint"] == 1 then
-			self.used_particles[particle["index"]]["radius"] = particle["position"].y
-		end
-	end
-	if self.used_particles[particle["index"]]["position"] ~= nil and self.used_particles[particle["index"]]["radius"] ~= nil then
-		local position = self.used_particles[particle["index"]]["position"]
-		local radius = self.used_particles[particle["index"]]["radius"]
-		local tree_type = self.used_particles[particle["index"]]["tree_type"]
-		local owner = self.used_particles[particle["index"]]["owner"]
-		Timers:CreateTimer(0.01, function()
-			if tree_type == "hoodwink_bushwhack" then
-				local trees = table.combine(CTree:FindInRadius(position, radius+32, true), CTempTree:FindInRadius(position, radius+32))
-				if #trees > 0 then
-					self:TriggerDestroyTrees(trees, position, tree_type, owner)
-				end
+	local tree_type = tree_types[particle["name"]]
+	if tree_type ~= nil then
+		local owner = nil
+		local trees = {}
+		if particle["entity_for_modifiers"] ~= nil then
+			owner = particle["entity_for_modifiers"]
+		elseif tree_type == "item_branches" then
+			local now = CGameRules:GetGameTime()
+			local used_items = table.values(table.map(table.filter(self.used_items, function(_, info) return now-info["time"] < 1 and tree_type == info["tree_type"] and info["trees"] == nil and info["owner"] ~= nil end), function(_, info) return {_, info} end))
+			table.sort(used_items, function(a, b)
+				return a[2]["time"] < b[2]["time"]
+			end)
+			if #used_items > 0 then
+				self.used_items[used_items[1][1]]["trees"] = {CEntity:Get(particle["entity_id"])}
 			else
-				self:TriggerDestroyTrees(CTempTree:FindInRadius(position, radius+48), position, tree_type, owner)
+				table.insert(self.used_items, {time=now, tree_type=tree_type, trees={CEntity:Get(particle["entity_id"])}})
 			end
-		end)
-		self.used_particles[particle["index"]] = nil
+			self:CheckForItemTree()
+			return
+		else
+			for _, enemy in pairs(CHero:GetEnemies()) do
+				local ability = enemy:GetAbilityOrItemByName(tree_type)
+				if ability ~= nil then
+					owner = enemy
+					break
+				end
+			end
+		end
+		if owner == nil or owner:GetTeamNum() == CPlayer:GetLocalTeam() then return end
+		local center = nil
+		if particle["entity_id"] ~= -1 then
+			local ent = CEntity:Get(particle["entity_id"])
+			if ent ~= nil and ent:IsEntity() then
+				table.insert(trees, ent)
+			end
+		elseif tree_type == "furion_sprout" then
+			local position = particle["control_points"][0][1]["position"]
+			local radius = particle["control_points"][1][1]["position"].y
+			trees = table.combine(trees, CTempTree:FindInRadius(position, radius+48))
+		elseif tree_type == "hoodwink_bushwhack" then
+			local position = particle["control_points"][1][1]["position"]
+			local radius = self:GetBushwhackRadius(owner)
+			trees = table.combine(CTree:FindInRadius(position, radius+32, true), CTempTree:FindInRadius(position, radius+32))
+			center = position
+		end
+		if #trees > 0 then
+			self:TriggerDestroyTrees(trees, center or trees[1]:GetAbsOrigin(), tree_type, owner)
+		end
 	end
 end
 
 function TreeDestroyerExtended:OnNPCLostItem(ability, caster, info)
 	if info.GetName == "item_branches" then
 		local tree_type = "item_branches"
-		local current_time = CGameRules:GetGameTime()
-		local possible_trees = {}
-		for ent, info in pairs(self.used_items) do
-			if info["tree_type"] == tree_type then
-				table.insert(possible_trees, {ent, info["time"]})
-			end
-		end
-		table.sort(possible_trees, function(a, b)
-			return math.abs(a[2]-current_time) < math.abs(b[2]-current_time)
+		local now = CGameRules:GetGameTime()
+		local used_items = table.values(table.map(table.filter(self.used_items, function(_, info) return now-info["time"] < 1 and tree_type == info["tree_type"] and info["trees"] ~= nil and info["owner"] == nil end), function(_, info) return {_, info} end))
+		table.sort(used_items, function(a, b)
+			return a[2]["time"] < b[2]["time"]
 		end)
-		local tree = possible_trees[1]
-		if tree ~= nil then
-			local entities = {CEntity:Get(tree[1])}
-			Timers:CreateTimer(0.01, function()
-				if entities[1]:IsEntity() then
-					self:TriggerDestroyTrees(entities, entities[1]:GetAbsOrigin(), tree_type, caster)
-				end
-			end)
-			self.used_items[tree[1]] = nil
+		if #used_items > 0 then
+			self.used_items[used_items[1][1]]["owner"] = caster
+		else
+			table.insert(self.used_items, {time=now, tree_type=tree_type, owner=caster})
 		end
+		self:CheckForItemTree()
 	end
 end
 
-function TreeDestroyerExtended:OnEntityCreate(entity)
-	local ent = CEntity:new(entity)
-	if not ent:IsTempTree() then return end
-	local tree = CTempTree:new(entity)
-	local entindex = tree:GetIndex()
-	for fx, info in pairs(table.copy(self.used_particles)) do
-		if info["entity_id"] == entindex then
-			local tree_type = info["tree_type"]
-			local owner = info["owner"]
-			Timers:CreateTimer(0.01, function()
-				self:TriggerDestroyTrees({tree}, tree:GetAbsOrigin(), tree_type, owner)
-			end, self)
-			self.used_particles[fx] = nil
+function TreeDestroyerExtended:CheckForItemTree()
+	local now = CGameRules:GetGameTime()
+	for _, info in pairs(table.copy(self.used_items)) do
+		if now-info["time"] < 1 then
+			if info["tree_type"] ~= nil and info["trees"] ~= nil and info["owner"] ~= nil then
+				self:TriggerDestroyTrees(info["trees"], info["trees"][1]:GetAbsOrigin(), info["tree_type"], info["owner"])
+				self.used_items[_] = nil
+			end
+		else
+			self.used_items[_] = nil
 		end
 	end
 end
