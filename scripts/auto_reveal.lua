@@ -89,8 +89,8 @@ function AutoReveal:Trigger(enemy, enemy_pos)
 	local search_range = 2500
 	local local_player = CPlayer:GetLocal()
 	local abilities = table.combine(table.map(self.reveal_abilities_select:Get(), function(_, ability_name)
-		return {ability_name, self:IsPiercesBKBOverride(ability_name)}
-	end), {{"item_ward_dispenser", true}})
+		return {ability_name, nil, self:IsPiercesBKBOverride(ability_name)}
+	end), {{"item_ward_dispenser", nil, true}})
 	local abilities_filter = self:UsableAbilitiesFilter(enemy)
 	for _, unit in pairs(CNPC:GetControllableUnits(enemy_pos, search_range, true)) do
 		if unit:RecursiveGetOwner() == local_player or self.allies_select:IsSelected(unit:GetUnitName()) then

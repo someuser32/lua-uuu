@@ -6,33 +6,33 @@ function AutoDisablerExtended:initialize()
 	self.path = {"Magma", "General", "Auto Disabler"}
 
 	self.disable_abilities = {
-		{"item_orchid", true, true},
-		{"item_bloodthorn", true, true},
-		{"item_sheepstick", true, true},
-		{"item_cyclone", true, true},
-		{"item_abyssal_blade", true, true},
-		{"item_book_of_shadows", false, true},
-		{"item_wind_waker", false, true},
-		{"item_heavens_halberd", false, true},
-		{"item_hurricane_pike", false, true},
-		{"item_psychic_headband", false, true},
-		{"item_rod_of_atos", false, true},
-		{"item_gungir", false, false},
-		{"lion_voodoo", true, true},
-		{"shadow_shaman_voodoo", true, true},
-		{"rubick_telekinesis", true, true},
-		{"skywrath_mage_ancient_seal", true, true},
-		{"dragon_knight_dragon_tail", true, true},
-		{"invoker_cold_snap", true, true},
-		{"invoker_tornado", true, false},
-		{"obsidian_destroyer_astral_imprisonment", true, true},
-		{"grimstroke_ink_creature", true, true},
-		{"lich_sinister_gaze", true, true},
-		{"bane_nightmare", false, true},
-		{"disruptor_glimpse", true, true},
-		{"shadow_demon_disruption", true, true},
-		{"lone_druid_savage_roar", false, false},
-		{"silencer_global_silence", false, false},
+		{"item_orchid", true},
+		{"item_bloodthorn", true},
+		{"item_sheepstick", true},
+		{"item_cyclone", true},
+		{"item_abyssal_blade", true},
+		{"item_book_of_shadows", false},
+		{"item_wind_waker", false},
+		{"item_heavens_halberd", false},
+		{"item_hurricane_pike", false},
+		{"item_psychic_headband", false},
+		{"item_rod_of_atos", false},
+		{"item_gungir", false},
+		{"lion_voodoo", true},
+		{"shadow_shaman_voodoo", true},
+		{"rubick_telekinesis", true},
+		{"skywrath_mage_ancient_seal", true},
+		{"dragon_knight_dragon_tail", true},
+		{"invoker_cold_snap", true},
+		{"invoker_tornado", true},
+		{"obsidian_destroyer_astral_imprisonment", true},
+		{"grimstroke_ink_creature", true},
+		{"lich_sinister_gaze", true},
+		{"bane_nightmare", false},
+		{"disruptor_glimpse", true},
+		{"shadow_demon_disruption", true},
+		{"lone_druid_savage_roar", false},
+		{"silencer_global_silence", false},
 	}
 
 	self.trigger_abilities = {
@@ -93,10 +93,12 @@ function AutoDisablerExtended:initialize()
 	self.auto_disabler_aggressive_enemies = UILib:CreateMultiselectFromEnemies({self.path, "Aggressive Disabler"}, "Aggressive enemies", false, false, true)
 	UILib:SetTabIcon({self.path, "Aggressive Disabler"}, "~/MenuIcons/enemy_evil.png")
 
-	local function CreateDisableAbilitySettings(whereAt, name, triggers_linken, icon)
+	local function CreateDisableAbilitySettings(whereAt, name, icon)
 		if name ~= "global" then
 			self.auto_disabler_disable_abilities[name.."_use_global"] = UILib:CreateCheckbox(whereAt, "Ignore global settings", false)
 		end
+
+		local behavior = name ~= "global" and KVLib:GetAbilityBehavior(name) or Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NONE
 
 		self.auto_disabler_disable_abilities[name.."_trigger"] = UILib:CreateMultiselect(whereAt, "Enemy's abilities", table.map(self.trigger_abilities, function(_, info) return {info[1], CAbility:GetAbilityNameIconPath(info[1]), info[2]} end), false)
 		self.auto_disabler_disable_abilities[name.."_trigger_enemies"] = {}
@@ -107,12 +109,18 @@ function AutoDisablerExtended:initialize()
 			end
 		end
 
-		if triggers_linken then
+		if name == "global" or CAbility:IsTriggersAbsorb(name) then
 			self.auto_disabler_disable_abilities[name.."_linken_breaker"] = LinkenBreaker:CreateUI(whereAt, nil, true, name)
+		end
+		if name == "global" or CAbility:IsTriggersReflect(name) then
 			self.auto_disabler_disable_abilities[name.."_spell_reflect"] = SpellReflect:CreateUI(whereAt)
 		end
-		self.auto_disabler_disable_abilities[name.."_range_buffer"] = UILib:CreateSlider(whereAt, "Range buffer", 0, 125, 50)
-		self.auto_disabler_disable_abilities[name.."_range_buffer"]:SetIcon("~/MenuIcons/radius.png")
+
+		if (behavior & Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) ~= Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET then
+			self.auto_disabler_disable_abilities[name.."_range_buffer"] = UILib:CreateSlider(whereAt, "Range buffer", 0, 125, 50)
+			self.auto_disabler_disable_abilities[name.."_range_buffer"]:SetIcon("~/MenuIcons/radius.png")
+		end
+
 		self.auto_disabler_disable_abilities[name.."_instant_mode"] = UILib:CreateCheckbox(whereAt, "Instant mode", false)
 		self.auto_disabler_disable_abilities[name.."_instant_mode"]:SetIcon("~/MenuIcons/red_square.png")
 		self.auto_disabler_disable_abilities[name.."_instant_mode"]:SetTip("[Rage mode]\n- Ignores any delays for this ability\n- Warning! This option ignores Anti-Overwatch\n[OVERWATCH RISK]")
@@ -125,10 +133,10 @@ function AutoDisablerExtended:initialize()
 
 	self.auto_disabler_disable_abilities = {}
 
-	CreateDisableAbilitySettings({self.path, "Settings", "Abilities", "Global"}, "global", true, "~/MenuIcons/globe_world.png")
+	CreateDisableAbilitySettings({self.path, "Settings", "Abilities", "Global"}, "global", "~/MenuIcons/globe_world.png")
 
 	for _, disable_ability in pairs(self.disable_abilities) do
-		CreateDisableAbilitySettings({self.path, "Settings", "Abilities", LocaleLib:LocalizeAbilityName(disable_ability[1], "true")}, disable_ability[1], disable_ability[3], CAbility:GetAbilityNameIconPath(disable_ability[1]))
+		CreateDisableAbilitySettings({self.path, "Settings", "Abilities", LocaleLib:LocalizeAbilityName(disable_ability[1], "true")}, disable_ability[1], CAbility:GetAbilityNameIconPath(disable_ability[1]))
 	end
 
 	UILib:SetTabIcon({self.path, "Settings", "Abilities"}, "~/MenuIcons/Dota/spell_book.png")
@@ -305,6 +313,10 @@ function AutoDisablerExtended:OnNPCPhaseAbility(ability)
 	end
 end
 
+---@param ability CAbility?
+---@param phase boolean?
+---@param caster CNPC
+---@return boolean
 function AutoDisablerExtended:Trigger(ability, phase, caster)
 	if not self.auto_disabler_enable:Get() then return false end
 	local delay = 0
@@ -323,13 +335,17 @@ function AutoDisablerExtended:Trigger(ability, phase, caster)
 	end
 	if caster:IsDisabled() then return false end
 	local caster_pos = caster:GetAbsOrigin()
-	local local_hero = CHero:GetLocal()
 	local search_range = 2500
+	local abilities = table.map(ability ~= nil and self.auto_disabler_disable_abilities_order:Get() or self.auto_disabler_aggressive_disable_abilities_order:Get(), function(_, ability_name)
+		local ability_info = self:GetAbilityInfo(ability_name)
+		return {ability_name, ability_info["range_buffer"] ~= nil and ability_info["range_buffer"]:Get() or 0, nil}
+	end)
+	local abilities_filter = self:UsableAbilitiesFilter(caster, ability)
 	for _, unit in pairs(CNPC:GetControllableUnits(caster_pos, search_range, true)) do
 		if (self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble()) then
 			if AntiOverwatch:CanUseAtCamera(unit, caster_pos, self.anti_overwatch_camera) then
 				if Conditions:CanUse(unit, self.conditions_invis, self.conditions_channeling) then
-					local disable_ability = self:GetUsableAbilities(unit, ability, caster)[1]
+					local disable_ability = unit:GetUsableAbilities(abilities, caster, function(ability) return self:GetAbilityInfo(ability:GetName())["linken_breaker"] end, function(ability) return self:GetAbilityInfo(ability:GetName())["spell_reflect"] end, abilities_filter)[1]
 					if disable_ability ~= nil then
 						local ability_info = self:GetAbilityInfo(disable_ability:GetName())
 						if ability_info["instant_mode"]:Get() then
@@ -343,6 +359,7 @@ function AutoDisablerExtended:Trigger(ability, phase, caster)
 							Timers:CreateTimer(delay, function()
 								self:DisableEnemy(disable_ability, caster, ability)
 							end, self)
+							return true
 						end
 					end
 				end
@@ -351,47 +368,29 @@ function AutoDisablerExtended:Trigger(ability, phase, caster)
 	end
 end
 
-function AutoDisablerExtended:DisableEnemy(ability, enemy, enemy_ability, ignore_spell_reflect)
-	local hero = ability:GetCaster()
+---@param ability CAbility
+---@param enemy CNPC
+---@param enemy_ability CAbility?
+---@return boolean
+function AutoDisablerExtended:DisableEnemy(ability, enemy, enemy_ability)
 	local ability_name = ability:GetName()
 	local ability_info = self:GetAbilityInfo(ability_name)
 	local old_disabling = self.disabling
 	self.disabling = true
-	if not ignore_spell_reflect and ability_info["spell_reflect"] ~= nil then
-		local used_save = SpellReflect:UseSaveIfNeed(ability, enemy, table.unpack(ability_info["spell_reflect"]))
-		if used_save == false then
-			return false
-		else
-			if type(used_save) ~= "boolean" then
-				Timers:CreateTimer(used_save[2] + 0.05 + (used_save[2] > 0 and CNetChannel:GetPingDelay() or 0), function()
-					hero:Stop()
-					self:DisableEnemy(ability, enemy, enemy_ability, true)
-				end, self)
-				return true
-			end
-		end
-	end
-	if hero:IsChannellingAbility() then
-		hero:Stop()
-	end
-	local this = self
-	local function callback(isLinkenFree)
+	return ability:CastAndCheck(enemy, false, false, true, ability_info["spell_reflect"], ability_info["linken_breaker"], function(isLinkenFree)
 		if not isLinkenFree then
-			this.disabling = old_disabling
+			self.disabling = old_disabling
 			return
 		end
-		ability:Cast(enemy)
-		this:SendNotification(ability, enemy_ability, enemy)
-		this.disabling = os.time()
-	end
-	if ability_info["linken_breaker"] ~= nil then
-		LinkenBreaker:BreakLinken(hero, enemy, ability_info["linken_breaker"], nil, ability_name, callback)
-	else
-		callback(true)
-	end
-	return true
+		self:SendNotification(ability, enemy_ability, enemy)
+		self.disabling = os.time()
+	end)
 end
 
+---@param disable_ability CAbility
+---@param trigger_ability CAbility?
+---@param enemy CNPC
+---@return nil
 function AutoDisablerExtended:SendNotification(disable_ability, trigger_ability, enemy)
 	if self.auto_disabler_notifications:Get() then
 		local enemy_image = CRenderer:GetOrLoadImage(GetHeroIconPath(enemy:GetUnitName()))
@@ -402,6 +401,8 @@ function AutoDisablerExtended:SendNotification(disable_ability, trigger_ability,
 	end
 end
 
+---@param ability_name string
+---@return {enemy_abilities: UILibOptionMultiselect, enemies: UILibOptionMultiselect, linken_breaker: UILibOptionMultiselect?, spell_reflect: any?, range_buffer: UILibOptionSlider?, instant_mode: UILibOptionCheckbox, allies: UILibOptionMultiselect}?
 function AutoDisablerExtended:GetAbilityInfo(ability_name)
 	if self.auto_disabler_disable_abilities[ability_name.."_use_global"] == nil then
 		return
@@ -420,53 +421,27 @@ function AutoDisablerExtended:GetAbilityInfo(ability_name)
 	}
 end
 
-function AutoDisablerExtended:IsAbilityTriggersLinken(ability_name)
-	for _, ability_info in pairs(self.disable_abilities) do
-		if ability_info[1] == ability_name then
-			return ability_info[3]
-		end
-	end
-	return true
-end
-
-function AutoDisablerExtended:GetUsableAbilities(hero, enemy_ability, enemy)
-	local is_local_hero = CPlayer:GetLocal() == hero:RecursiveGetOwner()
-	local distance = (enemy:GetAbsOrigin() - hero:GetAbsOrigin()):Length2D()
-	local hero_name = hero:GetUnitName()
-	local enemy_name = enemy:GetUnitName()
-	local is_enemy_bkb = enemy:IsDebuffImmune()
-	local is_enemy_silenced = enemy:IsSilenced()
-	local usable_abilities = {}
-	for _, ability_name in pairs(enemy_ability ~= nil and self.auto_disabler_disable_abilities_order:Get() or self.auto_disabler_aggressive_disable_abilities_order:Get()) do
+---@param target CNPC
+---@return function
+function AutoDisablerExtended:UsableAbilitiesFilter(enemy, enemy_ability)
+	---@param ability CAbility
+	---@return boolean | number | nil
+	return function(ability)
+		local hero = ability:GetCaster()
+		local ability_name = ability:GetName()
 		local ability_info = self:GetAbilityInfo(ability_name)
-		if enemy_ability == nil or (ability_info["enemy_abilities"]:IsSelected(enemy_ability:GetName(true)) and (ability_info["enemies"][ability_name] == nil or ability_info["enemies"][ability_name]:IsSelected(enemy_name))) then
-			if is_local_hero or ability_info["allies"]:IsSelected(hero_name) then
-				local ability = hero:GetAbilityOrItemByName(ability_name)
-				if ability ~= nil and ability:CanCast() and (not is_enemy_bkb or ability:PiercesBKB()) then
-					if not ability:IsSilence() or not is_enemy_silenced then
-						local is_triggers_linken = self:IsAbilityTriggersLinken(ability_name)
-						if not is_triggers_linken or not enemy:IsAbsorbsSpells() then
-							local cast_range = ability:GetCastRange()
-							local range_buffer = ability_info["range_buffer"]:Get()
-							if cast_range == 0 then
-								cast_range = ability:GetRadius() - range_buffer
-							end
-							if cast_range + range_buffer >= distance then
-								if not is_triggers_linken or ability_info["linken_breaker"] == nil or LinkenBreaker:CanUseAbility(ability, enemy, ability_info["linken_breaker"], nil, ability_name) then
-									if not is_triggers_linken or ability_info["spell_reflect"] == nil or SpellReflect:CanUse(ability, enemy, ability_info["spell_reflect"][1], ability_info["spell_reflect"][2]) then
-										table.insert(usable_abilities, ability)
-									end
-								end
-							end
-						end
-					end
+		if enemy_ability == nil or (ability_info["enemy_abilities"]:IsSelected(enemy_ability:GetName(true)) and (ability_info["enemies"][ability_name] == nil or ability_info["enemies"][ability_name]:IsSelected(enemy:GetUnitName()))) then
+			if CPlayer:GetLocal() == hero:RecursiveGetOwner() or ability_info["allies"]:IsSelected(hero:GetUnitName()) then
+				if not ability:IsSilence() or not enemy:IsSilenced() then
+					return true
 				end
 			end
 		end
+		return false
 	end
-	return usable_abilities
 end
 
+---@return CAbility[]
 function AutoDisablerExtended:GetAnyLocalUsableAbilities()
 	local hero = CHero:GetLocal()
 	local usable_abilities = {}

@@ -284,8 +284,16 @@ end
 
 ---@return boolean
 function CAbility:PiercesBKB()
+	local exceptions = {
+		"item_ward_observer",
+		"item_ward_sentry",
+		"item_ward_dispencer",
+		"item_seer_stone",
+		"item_gungir",
+		"item_dust",
+	}
 	local immunity_type = self:GetImmunityType()
-	return immunity_type == Enum.ImmunityTypes.SPELL_IMMUNITY_ENEMIES_YES or self:HasFlag(Enum.TargetFlags.DOTA_UNIT_TARGET_FLAG_MAGIC_IMMUNE_ENEMIES) or immunity_type == Enum.ImmunityTypes.SPELL_IMMUNITY_NONE
+	return immunity_type == Enum.ImmunityTypes.SPELL_IMMUNITY_ENEMIES_YES or self:HasFlag(Enum.TargetFlags.DOTA_UNIT_TARGET_FLAG_MAGIC_IMMUNE_ENEMIES) or table.contains(exceptions, self:GetName())
 end
 
 ---@return number
@@ -462,7 +470,7 @@ function CAbility:CastAndCheck(target, queue, showeffects, pushtocallback, spell
 			return
 		end
 		local aoe_radius = self:GetAOERadius()
-		if ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) and aoe_radius > 0 then
+		if self:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_POINT) and aoe_radius > 0 then
 			local position = (target.Length2D ~= nil and target.Dot2D ~= nil and target.ToAngle ~= nil) and target or target:GetAbsOrigin()
 			local cast_range = self:GetCastRange()
 			local casterpos = hero:GetAbsOrigin()
@@ -472,7 +480,6 @@ function CAbility:CastAndCheck(target, queue, showeffects, pushtocallback, spell
 				direction.z = 0
 				position = CWorld:GetGroundPosition(casterpos + direction * cast_range)
 				target = position
-				return
 			end
 		end
 		self:Cast(target, queue, showeffects, pushtocallback)

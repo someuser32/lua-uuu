@@ -420,10 +420,10 @@ function CNPC:GetUsableSpellAbsorbs()
 	return table.values(table.filter(abilities, function(_, ability) return ability ~= nil and ability:CanCast() end))
 end
 
----@param ability_names string[] | [string, boolean][]
+---@param ability_names string[] | [string, number, boolean][]
 ---@param target CNPC
----@param linken_breaker LinkenBreaker
----@param spell_reflect SpellReflect
+---@param linken_breaker LinkenBreaker | function?
+---@param spell_reflect SpellReflect | function?
 ---@param custom_filter function?
 ---@return (CAbility|CItem)[]
 function CNPC:GetUsableAbilities(ability_names, target, linken_breaker, spell_reflect, custom_filter)
@@ -435,23 +435,30 @@ function CNPC:GetUsableAbilities(ability_names, target, linken_breaker, spell_re
 	local usable_abilities = {}
 	for _, ability_info in pairs(ability_names) do
 		local ability_name = type(ability_info) == "table" and ability_info[1] or ability_info
-		local is_pierces_bkb_override = (type(ability_info) == "table" and {ability_info[2]} or {nil})[1]
+		local range_buffer = type(ability_info) == "table" and ability_info[2] or 0
+		local is_pierces_bkb_override = (type(ability_info) == "table" and {ability_info[3]} or {nil})[1]
 		local ability = self:GetAbilityOrItemByName(ability_name)
-		if ability ~= nil then
+		if ability ~= nil and ability:CanCast() then
 			local filter = (custom_filter ~= nil and {custom_filter(ability)} or {nil})[1]
 			if filter == 1 then
 				table.insert(usable_abilities, ability)
 			elseif filter ~= false then
-				if ability:CanTargetTeam(target_team) and ability:CanCast() and (is_ally or (not is_target_bkb or (is_pierces_bkb_override ~= nil and {is_pierces_bkb_override} or {ability:PiercesBKB()})[1])) then
+				if ability:CanTargetTeam(target_team) and (is_ally or (not is_target_bkb or (is_pierces_bkb_override ~= nil and {is_pierces_bkb_override} or {ability:PiercesBKB()})[1])) then
 					local is_triggers_linken = CAbility:IsTriggersAbsorb(ability_name)
 					if is_ally or (not is_triggers_linken or not is_target_absorbs) then
 						local cast_range = ability:GetCastRange()
-						if cast_range == 0 and ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) then
-							cast_range = ability:GetRadius()
+						if cast_range ~= 0 then
+							cast_range = cast_range + range_buffer
+						else
+							if ability:HasBehavior(Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NO_TARGET) then
+								cast_range = ability:GetRadius()
+							end
 						end
 						if cast_range == 0 or (cast_range + (ability:GetAOERadius() / 1.5)) >= distance then
-							if is_ally or (not is_triggers_linken or LinkenBreaker:CanUseAbility(ability, target, linken_breaker, nil, ability_name)) then
-								if is_ally or (not is_triggers_linken or SpellReflect:CanUse(ability, target, spell_reflect[1], spell_reflect[2])) then
+							local ability_linken_breaker = (type(linken_breaker) == "function" and {linken_breaker(ability)} or {linken_breaker})[1]
+							if is_ally or (not is_triggers_linken or LinkenBreaker:CanUseAbility(ability, target, ability_linken_breaker, nil, ability_name)) then
+								local ability_spell_reflect = (type(spell_reflect) == "function" and {spell_reflect(ability)} or {spell_reflect})[1]
+								if is_ally or (not is_triggers_linken or SpellReflect:CanUse(ability, target, ability_spell_reflect[1], ability_spell_reflect[2])) then
 									table.insert(usable_abilities, ability)
 								end
 							end
