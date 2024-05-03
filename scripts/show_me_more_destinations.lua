@@ -22,7 +22,7 @@ function ShowMeMoreDestinations:initialize()
 			alert = "hoodwink_bushwhack",
 			start_position = "0-xyz",
 			position = "1-xyz",
-			radius = function(owner, info)
+			radius = function(owner)
 				local ability = owner:GetAbility("hoodwink_bushwhack")
 				if ability and ability:GetLevel() > 0 then
 					return ability:GetLevelSpecialValueFor("trap_radius")
@@ -38,28 +38,11 @@ function ShowMeMoreDestinations:initialize()
 			radius = "2-x",
 			speed = 1600,
 		},
-		-- ["beastmaster_wildaxe"] = {
-		-- 	alert = "beastmaster_wild_axes",
-		-- 	start_position = "1-xyz",
-		-- 	position = "2-xyz",
-		-- 	radius = function(owner, info)
-		-- 		local ability = owner:GetAbility("beastmaster_wild_axes")
-		-- 		if ability and ability:GetLevel() > 0 then
-		-- 			return ability:GetLevelSpecialValueFor("radius")
-		-- 		end
-		-- 		return 175
-		-- 	end,
-		-- 	speed = function(owner, info)
-		-- 		if info["position"] ~= nil
-		-- 		return 1200
-		-- 	end,
-		-- }
 	}
 
 	self.enable = UILib:CreateCheckbox(self.path, "Show Spells Destination", false)
 	self.enable:SetIcon("~/MenuIcons/line_dashed.png")
 
-	self.particles = {}
 	self.drawings = {}
 	self.range_finder_drawings = {}
 	self.sticky_bomb_duration = 1.2
@@ -70,31 +53,31 @@ end
 function ShowMeMoreDestinations:OnUpdate()
 	if not self.enable:Get() then return end
 	local tick = self:GetTick()
-	-- if tick % 5 == 0 then
-	-- 	for _, hero in pairs(CHero:GetEnemies()) do
-	-- 		local sharpshooter_modifier = hero:GetModifier("modifier_hoodwink_sharpshooter_windup")
-	-- 		local entindex = hero:GetIndex()
-	-- 		if sharpshooter_modifier then
-	-- 			if self.range_finder_drawings[entindex.."_sharpshooter"] == nil then
-	-- 				self.range_finder_drawings[entindex.."_sharpshooter"] = {
-	-- 					fx=CParticleManager:Create("particles/units/heroes/hero_hoodwink/hoodwink_sharpshooter_range_finder.vpcf", Enum.ParticleAttachment.PATTACH_ABSORIGIN_FOLLOW, hero),
-	-- 					modifier=sharpshooter_modifier,
-	-- 					owner=hero,
-	-- 				}
-	-- 			end
-	-- 		end
-	-- 	end
-	-- end
-	-- for _, drawing in pairs(table.copy(self.range_finder_drawings)) do
-	-- 	if drawing["modifier"] ~= nil then
-	-- 		if drawing["modifier"]:IsValid() and drawing["owner"]:HasModifier(drawing["modifier"]:GetName()) then
-	-- 			CParticleManager:SetControlPoint(drawing["fx"], 1, drawing["owner"]:GetAbsOrigin() + drawing["owner"]:GetRotation():GetForward() * drawing["modifier"]:GetAbility():GetLevelSpecialValueFor("arrow_range"))
-	-- 		else
-	-- 			CParticleManager:Destroy(drawing["fx"])
-	-- 			self.range_finder_drawings[_] = nil
-	-- 		end
-	-- 	end
-	-- end
+	if tick % 6 == 0 then
+		for _, hero in pairs(CHero:GetEnemies()) do
+			local sharpshooter_modifier = hero:GetModifier("modifier_hoodwink_sharpshooter_windup")
+			local entindex = hero:GetIndex()
+			if sharpshooter_modifier then
+				if self.range_finder_drawings[entindex.."_sharpshooter"] == nil then
+					local ability = sharpshooter_modifier:GetAbility()
+					self.range_finder_drawings[entindex.."_sharpshooter"] = {
+						fx=CParticleManager:Create("particles/units/heroes/hero_hoodwink/hoodwink_sharpshooter_range_finder.vpcf", Enum.ParticleAttachment.PATTACH_ABSORIGIN_FOLLOW, hero),
+						modifier_name=sharpshooter_modifier:GetName(),
+						range=ability:GetLevelSpecialValueFor("arrow_range"),
+						owner=hero,
+					}
+				end
+			end
+		end
+	end
+	for _, drawing in pairs(table.copy(self.range_finder_drawings)) do
+		if drawing["owner"]:IsEntity() and drawing["owner"]:HasModifier(drawing["modifier_name"]) then
+			CParticleManager:SetControlPoint(drawing["fx"], 1, drawing["owner"]:GetAbsOrigin() + drawing["owner"]:GetRotation():GetForward() * drawing["range"])
+		else
+			CParticleManager:Destroy(drawing["fx"])
+			self.range_finder_drawings[_] = nil
+		end
+	end
 end
 
 function ShowMeMoreDestinations:OnDraw()
@@ -115,116 +98,62 @@ function ShowMeMoreDestinations:OnDraw()
 	end
 end
 
-function ShowMeMoreDestinations:OnParticleCreate(particle)
-	-- print("----------------\ncreate")
-	-- DeepPrintTable(particle)
-	local particle_info = self.particles_info[particle["fullName"]] or self.particles_info[particle["name"]]
-	if particle_info == nil then return end
-	local owner = nil
-	if particle["entityForModifiers"] ~= nil then
-		owner = CNPC:new(particle["entityForModifiers"])
-	end
-	if owner == nil and particle_info["ability"] ~= nil then
-		for _, enemy in pairs(CHero:GetEnemies()) do
-			local ability = enemy:GetAbilityOrItemByName(particle_info["ability"])
-			if ability ~= nil then
-				owner = enemy
-				break
-			end
-		end
-	end
-	if owner == nil and particle["entity_id"] ~= nil and particle["entity_id"] ~= -1 then
-		owner = CNPC:new(particle["entity_id"])
-	end
-	if owner == nil or owner:GetTeamNum() == CPlayer:GetLocalTeam() then return end
-	self.particles[particle["index"]] = {
-		start=CGameRules:GetGameTime(),
-		name=particle["name"],
-		fullname=particle["fullName"],
-		owner=owner,
-	}
-end
-
-function ShowMeMoreDestinations:OnParticleUpdate(particle)
-	-- print("----------------\nupdate")
-	-- DeepPrintTable(particle)
-	local create_info = self.particles[particle["index"]]
-	if create_info == nil then return end
-	local particle_info = self.particles_info[create_info["fullName"]] or self.particles_info[create_info["name"]]
-	for _, key in pairs({"start_position", "speed", "position", "radius"}) do
-		if type(particle_info[key]) == "string" then
-			local controlPoint, coordinates = table.unpack(string.split(particle_info[key], "-"))
-			if particle["controlPoint"] == tonumber(controlPoint) then
-				local coordinates_table = string.split(coordinates, "")
-				if #coordinates_table == 1 then
-					self.particles[particle["index"]][key] = particle["position"][coordinates_table[1]]
-				else
-					local vec = {}
-					for _, coord in pairs(coordinates_table) do
-						vec[coord] = particle["position"][coord]
-					end
-					self.particles[particle["index"]][key] = Vector(vec["x"] or 0, vec["y"] or 0, vec["z"] or 0)
+function ShowMeMoreDestinations:OnParticle(particle)
+	if not self.enable:Get() then return end
+	local particle_info = self.particles_info[particle["name"]] or self.particles_info[particle["shortname"]]
+	if particle_info ~= nil then
+		local owner = particle["entity_for_modifiers"]
+		if owner == nil then
+			for _, enemy in pairs(CHero:GetEnemies()) do
+				local ability = enemy:GetAbilityOrItemByName(particle_info["ability"])
+				if ability ~= nil then
+					owner = enemy
+					break
 				end
 			end
-		elseif type(particle_info[key]) == "function" then
-			self.particles[particle["index"]][key] = particle_info[key](create_info["owner"], self.particles[particle["index"]])
-		elseif type(particle_info[key]) == "number" then
-			self.particles[particle["index"]][key] = particle_info[key]
 		end
-	end
-	create_info = self.particles[particle["index"]]
-	if create_info["start_position"] ~= nil and create_info["speed"] ~= nil and create_info["position"] ~= nil and create_info["radius"] ~= nil then
-		local duration = (create_info["position"] - create_info["start_position"]):Length2D() / create_info["speed"]
-		self:DrawAlert(particle_info["alert"], create_info["position"], create_info["radius"], duration)
-		self.particles["index"] = nil
-	end
-end
-
-function ShowMeMoreDestinations:OnParticleUpdateEntity(particle)
-	-- print("----------------\nupdate ent")
-	-- DeepPrintTable(particle)
-	local create_info = self.particles[particle["index"]]
-	if create_info == nil then return end
-	local particle_info = self.particles_info[create_info["fullName"]] or self.particles_info[create_info["name"]]
-	for _, key in pairs({"start_position", "speed", "position", "radius"}) do
-		if type(particle_info[key]) == "string" then
-			local controlPoint, coordinates = table.unpack(string.split(particle_info[key], "-"))
-			if particle["controlPoint"] == tonumber(controlPoint) then
-				local coordinates_table = string.split(coordinates, "")
-				if #coordinates_table == 1 then
-					self.particles[particle["index"]][key] = particle["position"][coordinates_table[1]]
-				else
-					local vec = {}
-					for _, coord in pairs(coordinates_table) do
-						vec[coord] = particle["position"][coord]
+		if owner == nil and particle["entity"] ~= nil then
+			owner = particle["entity"]
+		end
+		if owner == nil or owner:GetTeamNum() == CPlayer:GetLocalTeam() then return end
+		local data = {}
+		for _, key in pairs({"start_position", "speed", "position", "radius"}) do
+			if type(particle_info[key]) == "string" then
+				local controlPoint, coordinates = table.unpack(string.split(particle_info[key], "-"))
+				local control_points = particle["control_points"][tonumber(controlPoint)]
+				if control_points ~= nil then
+					local coordinates_table = string.split(coordinates, "")
+					if #coordinates_table == 1 then
+						data[key] = control_points[#control_points]["position"][coordinates_table[1]]
+					else
+						local vec = {}
+						for _, coord in pairs(coordinates_table) do
+							vec[coord] = control_points[#control_points]["position"][coord]
+						end
+						data[key] = Vector(vec["x"] or 0, vec["y"] or 0, vec["z"] or 0)
 					end
-					self.particles[particle["index"]][key] = Vector(vec["x"] or 0, vec["y"] or 0, vec["z"] or 0)
 				end
+			elseif type(particle_info[key]) == "function" then
+				data[key] = particle_info[key](owner)
+			elseif type(particle_info[key]) == "number" then
+				data[key] = particle_info[key]
 			end
-		elseif type(particle_info[key]) == "function" then
-			self.particles[particle["index"]][key] = particle_info[key](create_info["owner"], self.particles[particle["index"]])
-		elseif type(particle_info[key]) == "number" then
-			self.particles[particle["index"]][key] = particle_info[key]
 		end
-	end
-	create_info = self.particles[particle["index"]]
-	if create_info["start_position"] ~= nil and create_info["speed"] ~= nil and create_info["position"] ~= nil and create_info["radius"] ~= nil then
-		local duration = (create_info["position"] - create_info["start_position"]):Length2D() / create_info["speed"]
-		self:DrawAlert(particle_info["alert"], create_info["position"], create_info["radius"], duration)
-		self.particles["index"] = nil
+		if data["start_position"] ~= nil and data["speed"] ~= nil and data["position"] ~= nil and data["radius"] ~= nil then
+			local duration = (data["position"] - data["start_position"]):Length2D() / data["speed"]
+			self:DrawAlert(particle_info["alert"], data["position"], data["radius"], duration)
+		end
 	end
 end
 
 function ShowMeMoreDestinations:OnEntityCreate(entity)
+	if not self.enable:Get() then return end
 	local ent = CEntity:new(entity)
 	if ent:IsNPC() then
 		local npc = CNPC:new(entity)
 		Timers:CreateTimer(0.01, function()
 			if npc:GetTeamNum() == CPlayer:GetLocalTeam() then return end
 			if npc:GetUnitName() == "npc_dota_techies_mines" then
-				self.sticky_mine = npc
-				self.last_pos = npc:GetAbsOrigin()
-				self.last_z = math.floor(self.last_pos.z)
 				local old_pos = npc:GetAbsOrigin()
 				local old_time = CGameRules:GetGameTime()
 				local old_speed = 0
@@ -235,7 +164,7 @@ function ShowMeMoreDestinations:OnEntityCreate(entity)
 						return
 					end
 					local now = CGameRules:GetGameTime()
-					local elapsed_time = (now - old_time)
+					local elapsed_time = now - old_time
 					local new_pos = npc:GetAbsOrigin()
 					local distance = (new_pos-old_pos):Length2D()
 					local speed = distance / elapsed_time
@@ -261,11 +190,11 @@ function ShowMeMoreDestinations:OnEntityCreate(entity)
 	end
 end
 
-function ShowMeMoreDestinations:OnLinearProjectileCreate(projectile)
-	-- print("----------------\nprojectile")
-	-- DeepPrintTable(projectile)
-end
-
+---@param alert string
+---@param position Vector
+---@param radius number
+---@param duration number
+---@return nil
 function ShowMeMoreDestinations:DrawAlert(alert, position, radius, duration)
 	if not self.enable:Get() then return end
 	local alert_info = self.alerts_info[alert]
