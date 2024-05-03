@@ -189,6 +189,8 @@ function CAbility:GetNameGeneral()
 		return "item_blink"
 	elseif CItem:IsDagon(name) then
 		return "item_dagon"
+	elseif name == "item_ward_dispenser" then
+		return self:GetToggleState() and "item_ward_observer" or "item_ward_sentry"
 	end
 	return name
 end
