@@ -34,7 +34,9 @@ function Timers:Think()
 				else
 					return timer.callback(timer)
 				end
-			end, function (msg) return msg.."\n"..debug.traceback().."\n" end)
+			end, function(msg)
+				Timers:HandleEventError("Timer", id, msg.."\n"..debug.traceback().."\n")
+			end)
 			if type(nextCall) ~= "number" then nextCall = nil end
 			Timers.runningTimer = nil
 			if status then
@@ -42,8 +44,6 @@ function Timers:Think()
 					timer.delay = nextCall
 					Timers.timers[id] = timer
 				end
-			else
-				Timers:HandleEventError("Timer", id, nextCall)
 			end
 		else
 			timer.delay = timer.delay - delta
@@ -54,7 +54,7 @@ function Timers:Think()
 end
 
 function Timers:HandleEventError(id, event, err)
-	print(id, event, err)
+	print(err)
 end
 
 ---@param callback function | table | number

@@ -61,20 +61,24 @@ function CPlayer.static:GetLocalID()
 end
 
 ---@param unit CNPC
----@return nil
+---@return boolean
 function CPlayer.static:AddSelectedUnit(unit)
-	return self:StaticAPICall("AddSelectedUnit", Player.AddSelectedUnit, self:GetLocal(), unit)
+	return CEngine:RunScript("GameUI.SelectUnit("..tostring(unit:GetIndex())..", true)")
+	-- return self:StaticAPICall("AddSelectedUnit", Player.AddSelectedUnit, self:GetLocal(), unit)
 end
 
 ---@param unit CNPC | CNPC[]
 ---@return boolean
 function CPlayer.static:SetSelectedUnit(unit)
-	if unit.ent == nil and type(unit) == "table" then
-		self:SetSelectedUnit(unit[1])
+	if type(unit) == "table" and (unit.IsClass == nil or not unit:IsClass()) then
 		for _, select_unit in pairs(unit) do
-			self:AddSelectedUnit(select_unit)
+			if _ == 1 then
+				self:SetSelectedUnit(select_unit)
+			else
+				self:AddSelectedUnit(select_unit)
+			end
 		end
-		return
+		return true
 	end
 	return CEngine:RunScript("GameUI.SelectUnit("..tostring(unit:GetIndex())..", false)")
 end
@@ -82,18 +86,7 @@ end
 ---@param unit CNPC
 ---@return nil
 function CPlayer.static:DeselectUnit(unit)
-	local selected_units = self:GetSelectedUnits()
-	local initial_selected = false
-	for _, selected_unit in pairs(selected_units) do
-		if selected_unit ~= unit then
-			if not initial_selected then
-				self:SetSelectedUnit(selected_unit)
-				initial_selected = true
-			else
-				self:AddSelectedUnit(selected_unit)
-			end
-		end
-	end
+	return self:SetSelectedUnit(table.filter(self:GetSelectedUnits(), function(_, selected_unit) return selected_unit ~= unit end))
 end
 
 ---@return CNPC[]

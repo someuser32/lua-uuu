@@ -79,7 +79,7 @@ end
 ---@return CNPC?
 function CNPC.static:FromIndex(entindex)
 	local ent = CEntity:Get(entindex)
-	if ent == nil or not ent:IsEntity() then
+	if ent == nil or not ent:IsNPC() then
 		return nil
 	end
 	return CNPC:new(ent.ent)

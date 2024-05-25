@@ -72,13 +72,14 @@ function DangerSelector:OnUpdate()
 			local localplayerid = CPlayer:GetLocalID()
 			for _, unit in pairs(CNPC:GetAll()) do
 				if unit:IsControllableByPlayer(localplayerid) and (not self.select_filter_only_own:Get() or unit:RecursiveGetOwner() == localplayer) and self:IsMassSummon(unit) then
+					local entindex = unit:GetIndex()
 					if self:IsUnderDangerEffect(unit) then
-						if self.saving_units[unit] == nil then
-							self.saving_units[unit] = self:SaveUnit(unit)
+						if self.saving_units[entindex] == nil then
+							self.saving_units[entindex] = self:SaveUnit(unit)
 						end
 					else
-						if self.saving_units[unit] ~= nil then
-							self.saving_units[unit] = nil
+						if self.saving_units[entindex] ~= nil then
+							self.saving_units[entindex] = nil
 						end
 					end
 				end
@@ -89,27 +90,31 @@ end
 
 function DangerSelector:OnPrepareUnitOrders(order)
 	if not self.enable:Get() then return true end
-	if table.contains({
-		Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,
-		Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION,
-		Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET,
-		Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE,
-		Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET,
-	}, order["order"]) then
-		self.last_order_position = order["position"]
-		if self.auto_save_enable:Get() and self.auto_save_position_re_move:Get() then
-			for unit, saving_position in pairs(table.copy(self.saving_units)) do
-				if unit:IsAlive() then
-					local position = unit:GetAbsOrigin()
-					local angle_source = (self.last_order_position - saving_position):Normalized()
-					local angle = vector.angle_between_vectors((saving_position - position):Normalized(), angle_source)
-					if angle < 50 then
-						Timers:CreateTimer(self.auto_save_position_re_move_delay, function()
-							self.saving_units[unit] = self:SaveUnit(unit)
-						end, self)
+	if self.auto_save_enable:Get() then
+		if table.contains({
+			Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+			Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION,
+			Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET,
+			Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE,
+			Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET,
+		}, order["order"]) and (order["npc"] == nil or order["npc"] == CHero:GetLocal().ent) then
+			self.last_order_position = order["position"]
+			if self.auto_save_position_re_move:Get() then
+				for entindex, saving_position in pairs(table.copy(self.saving_units)) do
+					local unit = CNPC:FromIndex(entindex)
+					if unit ~= nil and unit:IsAlive() then
+						local position = unit:GetAbsOrigin()
+						local angle_source = (self.last_order_position - saving_position):Normalized()
+						local angle = vector.angle_between_vectors((saving_position - position):Normalized(), angle_source)
+						local distance = (saving_position-position):Length2D()
+						if angle < 50 or distance < 300 then
+							Timers:CreateTimer(self.auto_save_position_re_move_delay:Get(), function()
+								self.saving_units[entindex] = self:SaveUnit(unit)
+							end, self)
+						end
+					else
+						self.saving_units[entindex] = nil
 					end
-				else
-					self.saving_units[unit] = nil
 				end
 			end
 		end
@@ -181,7 +186,7 @@ function DangerSelector:SaveUnit(unit)
 		CPlayer:DeselectUnit(unit)
 	end
 	CMiniMap:Ping(position)
-	unit:MoveTo(position, false, false, false)
+	unit:MoveTo(position, false, true, false)
 	return position
 end
 
