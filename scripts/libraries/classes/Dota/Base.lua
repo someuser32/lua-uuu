@@ -100,7 +100,14 @@ function DBase.static:StaticAPICall(func_name, func, ...)
 			args[_] = arg.ent
 		end
 	end
-	return table.unpack(table.map({func(table.unpack(args))}, function(_, val) return self:TypeCast(func_name, val) end))
+	return table.unpack(
+		table.map(
+			{
+				func(table.unpack(args))
+			},
+			function(_, val) return self:TypeCast(func_name, val) end
+		)
+	)
 end
 
 return DBase

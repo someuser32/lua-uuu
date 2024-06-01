@@ -35,12 +35,15 @@ function DangerSelector:initialize()
 	self.auto_save_position_re_move = UILib:CreateCheckbox({self.path, "Auto Save summons"}, "Re-move after order", false)
 	self.auto_save_position_re_move:SetTip("Recalculates and moves to new position saving unit when order")
 	self.auto_save_position_re_move:SetIcon("~/MenuIcons/shuffle.png")
-	self.auto_save_position_re_move_delay = UILib:CreateSlider({self.path, "Auto Save summons"}, "Re-move delay", 0, 1, 0.35)
+	self.auto_save_position_re_move_delay = UILib:CreateSlider({self.path, "Auto Save summons"}, "Re-move delay", 0, 0.5, 0.35)
 	self.auto_save_position_re_move_delay:SetTip("Highly not recommended to set values below 0.2!")
 	self.auto_save_position_re_move_delay:SetIcon("~/MenuIcons/Time/timer_def.png")
 
-	self.auto_save_deselect = UILib:CreateCheckbox({self.path, "Auto Save summons"}, "Deselect unit", true)
-	self.auto_save_deselect:SetTip("Removes saved unit from selection")
+	self.auto_save_deselect = UILib:CreateCombo({self.path, "Auto Save summons"}, "Selection", {
+		"Do nothing",
+		"Deselect",
+		"Deselect and prevent selection",
+	}, 2)
 	self.auto_save_deselect:SetIcon("~/MenuIcons/collect.png")
 
 	UILib:SetTabIcon({self.path, "Auto Save summons"}, "~/MenuIcons/group4.png")
@@ -48,6 +51,7 @@ function DangerSelector:initialize()
 	UILib:SetTabIcon(self.path, "~/MenuIcons/target.png")
 
 	self.saving_units = {}
+	self.re_saving_units_timers = {}
 	self.last_order_position = nil
 
 	self.listeners = {}
@@ -70,10 +74,12 @@ function DangerSelector:OnUpdate()
 		if self.auto_save_enable:Get() then
 			local localplayer = CPlayer:GetLocal()
 			local localplayerid = CPlayer:GetLocalID()
+			local saved_units = {}
 			for _, unit in pairs(CNPC:GetAll()) do
 				if unit:IsControllableByPlayer(localplayerid) and (not self.select_filter_only_own:Get() or unit:RecursiveGetOwner() == localplayer) and self:IsMassSummon(unit) then
 					local entindex = unit:GetIndex()
 					if self:IsUnderDangerEffect(unit) then
+						table.insert(saved_units, entindex)
 						if self.saving_units[entindex] == nil then
 							self.saving_units[entindex] = self:SaveUnit(unit)
 						end
@@ -82,6 +88,12 @@ function DangerSelector:OnUpdate()
 							self.saving_units[entindex] = nil
 						end
 					end
+				end
+			end
+			if self.auto_save_deselect:GetIndex() == 3 then
+				if #saved_units > 0 then
+					local units = table.map(saved_units, function(_, entindex) return CNPC:FromIndex(entindex) end)
+					CPlayer:DeselectUnit(units)
 				end
 			end
 		end
@@ -106,10 +118,16 @@ function DangerSelector:OnPrepareUnitOrders(order)
 						local position = unit:GetAbsOrigin()
 						local angle_source = (self.last_order_position - saving_position):Normalized()
 						local angle = vector.angle_between_vectors((saving_position - position):Normalized(), angle_source)
-						local distance = (saving_position-position):Length2D()
-						if angle < 50 or distance < 300 then
-							Timers:CreateTimer(self.auto_save_position_re_move_delay:Get(), function()
+						local distance = (saving_position-self.last_order_position):Length2D()
+						if angle < 90 or distance < 300 then
+							local delta = self.auto_save_position_re_move_delay:Get()
+							if self.re_saving_units_timers[entindex] ~= nil then
+								delta = Timers:GetRemainingTime(self.re_saving_units_timers[entindex])
+								Timers:RemoveTimer(self.re_saving_units_timers[entindex])
+							end
+							self.re_saving_units_timers[entindex] = Timers:CreateTimer(math.max(delta, 0.01), function()
 								self.saving_units[entindex] = self:SaveUnit(unit)
+								self.re_saving_units_timers[entindex] = nil
 							end, self)
 						end
 					else
@@ -182,10 +200,10 @@ function DangerSelector:SaveUnit(unit)
 		end)
 	end
 	position = best_positions[1][1]
-	if self.auto_save_deselect:Get() then
+	local deselection = self.auto_save_deselect:GetIndex()
+	if deselection == 2 or deselection == 3 then
 		CPlayer:DeselectUnit(unit)
 	end
-	CMiniMap:Ping(position)
 	unit:MoveTo(position, false, true, false)
 	return position
 end

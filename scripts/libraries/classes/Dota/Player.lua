@@ -63,14 +63,16 @@ end
 ---@param unit CNPC
 ---@return boolean
 function CPlayer.static:AddSelectedUnit(unit)
-	return CEngine:RunScript("GameUI.SelectUnit("..tostring(unit:GetIndex())..", true)")
-	-- return self:StaticAPICall("AddSelectedUnit", Player.AddSelectedUnit, self:GetLocal(), unit)
+	return self:StaticAPICall("AddSelectedUnit", Player.AddSelectedUnit, self:GetLocal(), unit)
 end
 
 ---@param unit CNPC | CNPC[]
 ---@return boolean
 function CPlayer.static:SetSelectedUnit(unit)
 	if type(unit) == "table" and (unit.IsClass == nil or not unit:IsClass()) then
+		if #unit == 0 then
+			self:ClearSelectedUnits()
+		end
 		for _, select_unit in pairs(unit) do
 			if _ == 1 then
 				self:SetSelectedUnit(select_unit)
@@ -80,18 +82,48 @@ function CPlayer.static:SetSelectedUnit(unit)
 		end
 		return true
 	end
-	return CEngine:RunScript("GameUI.SelectUnit("..tostring(unit:GetIndex())..", false)")
+	self:ClearSelectedUnits()
+	return self:AddSelectedUnit(unit)
 end
 
----@param unit CNPC
+---@param unit CNPC | CNPC[]
 ---@return nil
 function CPlayer.static:DeselectUnit(unit)
-	return self:SetSelectedUnit(table.filter(self:GetSelectedUnits(), function(_, selected_unit) return selected_unit ~= unit end))
+	if not self:IsUnitSelected(unit) then return end
+	local units = {}
+	if type(unit) == "table" and (unit.IsClass and unit:IsClass()) then
+		table.insert(units, unit)
+	else
+		units = unit
+	end
+	return self:SetSelectedUnit(table.filter(self:GetSelectedUnits(), function(_, selected_unit) return not table.contains(units, selected_unit) end))
+end
+
+---@return nil
+function CPlayer.static:ClearSelectedUnits()
+	return self:StaticAPICall("ClearSelectedUnits", Player.ClearSelectedUnits, self:GetLocal())
 end
 
 ---@return CNPC[]
 function CPlayer.static:GetSelectedUnits()
-	return self:StaticAPICall("GetSelectedUnits", Player.GetSelectedUnits, self:GetLocal())
+	return self:StaticAPICall("GetSelectedUnits", Player.GetSelectedUnits, self:GetLocal()) or {}
+end
+
+---@param unit CNPC | CNPC[]
+---@return boolean
+function CPlayer.static:IsUnitSelected(unit)
+	local units = {}
+	if type(unit) == "table" and (unit.IsClass and unit:IsClass()) then
+		table.insert(units, unit)
+	else
+		units = unit
+	end
+	for _, selected_unit in pairs(self:GetSelectedUnits()) do
+		if table.contains(units, selected_unit) then
+			return true
+		end
+	end
+	return false
 end
 
 ---@return CAbility?

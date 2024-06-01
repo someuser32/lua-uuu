@@ -44,7 +44,7 @@ end
 
 ---@param v1 Vector
 ---@param v2 Vector
----@param not_min boolean
+---@param not_min boolean?
 ---@return number
 function vector.angle_between_vectors(v1, v2, not_min)
 	local angle = math.abs(math.deg(math.atan2(v1.x, v1.y) - math.atan2(v2.x, v2.y)))

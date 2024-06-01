@@ -121,6 +121,15 @@ function Timers:CreateTimer(callback, args, context)
 end
 
 ---@param id integer
+---@return number
+function Timers:GetRemainingTime(id)
+	if Timers.timers[id] ~= nil then
+		return math.max(Timers.timers[id].delay, 0)
+	end
+	return -1
+end
+
+---@param id integer
 ---@return nil
 function Timers:RemoveTimer(id)
 	Timers.timers[id] = nil
