@@ -48,7 +48,7 @@ end
 
 function LotusHelper:OnUpdate()
 	local tick = self:GetTick()
-	if tick % 15 == 0 then
+	if tick % 100 == 0 then
 		for _, lotus_pool in pairs(CNPC:GetAll()) do
 			if lotus_pool:IsLotusPool() then
 				self.lotus_pools[lotus_pool:GetIndex()] = {lotus_pool, lotus_pool:GetAbsOrigin(), lotus_pool:GetModifier("modifier_passive_mango_tree")}

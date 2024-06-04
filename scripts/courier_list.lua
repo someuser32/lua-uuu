@@ -30,32 +30,36 @@ function CourierList:initialize()
 
 	self.listeners = {}
 
+	self.enemies = {}
 	self.courier_respawns = {}
 
 	self:UpdateCouriersInfo()
 end
 
+function CourierList:OnMenuOptionChange(option, oldValue, newValue)
+	if option == self.enable.menu_option then
+		if self.enable:Get() then
+			self:UpdateCouriersInfo()
+		end
+	end
+end
+
 function CourierList:DrawPanel(position)
-	local enemies = CHero:GetEnemies()
+	local now = CGameRules:GetGameTime()
 	CRenderer:SetDrawColor(0, 0, 0, 50)
 	CRenderer:DrawFilledRect(position[1], position[2], self.max_width, self.max_height)
 	CRenderer:SetDrawColor(10, 10, 10, 125)
 	CRenderer:DrawOutlineRect(position[1], position[2], self.max_width, self.max_height)
 	CRenderer:SetDrawColor(255, 255, 255, 255)
 	CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage("~/MenuIcons/Dota/Courier_Donkey.png"), position[1]+(self.max_width-4)/2, position[2]+self.courier_icon_size/2, self.courier_icon_size, self.courier_icon_size)
-	for _, hero in pairs(enemies) do
-		local player = hero:GetPlayerOwner()
-		if player then
-			local hero_name = hero:GetUnitName()
-			local playerID = player:GetPlayerID()
-			local respawn_time = math.floor(math.max((self.courier_respawns[playerID] or 0) - CGameRules:GetGameTime(), 0))
-			local x, y = position[1]+2, position[2]+2+self.courier_icon_size+self.hero_icon_size*(_-1)
-			CRenderer:SetDrawColor(255, 255, 255, 255)
-			CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(GetHeroIconPath(hero_name)), x+self.hero_icon_size/2, y+self.hero_icon_size/2, self.hero_icon_size, self.hero_icon_size)
-			local text = respawn_time > 0 and ToClockMin(respawn_time) or "ALIVE"
-			local text_width, text_height = CRenderer:GetTextSize(self.font, text)
-			CRenderer:DrawTextCentered(self.font, x+self.hero_icon_size+2+(self.max_width-self.hero_icon_size-2-4)/2, y+self.hero_icon_size/2, text)
-		end
+	for _, enemy_data in pairs(self.enemies) do
+		local hero, hero_name, playerID = table.unpack(enemy_data)
+		local respawn_time = math.floor(math.max((self.courier_respawns[playerID] or 0) - now, 0))
+		local x, y = position[1]+2, position[2]+2+self.courier_icon_size+self.hero_icon_size*(_-1)
+		CRenderer:SetDrawColor(255, 255, 255, 255)
+		CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage(GetHeroIconPath(hero_name)), x+self.hero_icon_size/2, y+self.hero_icon_size/2, self.hero_icon_size, self.hero_icon_size)
+		local text = respawn_time > 0 and ToClockMin(respawn_time) or "ALIVE"
+		CRenderer:DrawTextCentered(self.font, x+self.hero_icon_size+2+(self.max_width-self.hero_icon_size-2-4)/2, y+self.hero_icon_size/2, text)
 	end
 end
 
@@ -84,7 +88,7 @@ end
 function CourierList:OnUpdate()
 	if not self.enable:Get() then return end
 	local tick = self:GetTick()
-	if tick % 30 == 0 then
+	if tick % 100 == 0 then
 		self:UpdateCouriersInfo()
 	end
 end
@@ -95,6 +99,11 @@ function CourierList:OnDraw()
 end
 
 function CourierList:UpdateCouriersInfo()
+	if not self.enable:Get() then return end
+	self.enemies = table.map(CHero:GetEnemies(), function(_, hero)
+		local player = hero:GetPlayerOwner()
+		return {hero, hero:GetUnitName(), player ~= nil and player:GetPlayerID() or -1}
+	end)
 	for _, courier in pairs(CCourier:GetAll()) do
 		local player = courier:GetOwner()
 		if player then
@@ -104,6 +113,7 @@ function CourierList:UpdateCouriersInfo()
 end
 
 function CourierList:OnCourierLostEvent(killerid, teamnumber, bounty_gold)
+	if CPlayer:GetLocalTeam() == teamnumber then return end
 	self:UpdateCouriersInfo()
 end
 
