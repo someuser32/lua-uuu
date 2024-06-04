@@ -30,6 +30,15 @@ function CCourier.static:Contains(ent)
 	return self:StaticAPICall("Contains", Couriers.Contains, ent)
 end
 
+---@return CPlayer?
+function CCourier:GetOwner()
+	local owner = self:APICall("RecursiveGetOwner", Entity.RecursiveGetOwner, self)
+	if owner == nil then
+		return nil
+	end
+	return CPlayer:new(owner.ent)
+end
+
 _Classes_Inherite({"Entity", "NPC", "Courier"}, CCourier)
 
 return CCourier

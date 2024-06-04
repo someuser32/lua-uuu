@@ -131,6 +131,32 @@ function CPlayer.static:GetActiveAbility()
 	return self:StaticAPICall("GetActiveAbility", Player.GetActiveAbility, self:GetLocal())
 end
 
+---@return {top_left: [number, number], top_right: [number, number], bottom_left: [number, number], bottom_right: [number, number]}?
+function CPlayer:GetTopbarPanelBounds()
+	local topbar = CPanorama:GetPanelByPath({"HUDElements", "topbar"})
+	if topbar == nil or not topbar:IsVisible() then
+		return nil
+	end
+	local panels = {
+		[Enum.TeamNum.TEAM_RADIANT] = "RadiantPlayer%PlayerID%",
+		[Enum.TeamNum.TEAM_DIRE] = "DirePlayer%PlayerID%"
+	}
+	local playerID = self:GetPlayerID()
+	local team = self:GetTeamNum()
+	local panel_name = string.gsub(panels[team], "%%PlayerID%%", tostring(playerID))
+	local topbar_player = topbar:FindChildByPathTraverse({panel_name, "HeroImage"})
+	if topbar_player == nil then
+		return nil
+	end
+	local bounds = topbar_player:GetBounds()
+	return {
+		top_left={team ~= Enum.TeamNum.TEAM_DIRE and bounds["x"] or bounds["x"] + 5, bounds["y"]},
+		top_right={team ~= Enum.TeamNum.TEAM_DIRE and bounds["x"] + bounds["w"] - 5 or bounds["x"] + bounds["w"], bounds["y"]},
+		bottom_left={team ~= Enum.TeamNum.TEAM_DIRE and bounds["x"] + 5 or bounds["x"], bounds["y"] + bounds["h"]},
+		bottom_right={team ~= Enum.TeamNum.TEAM_DIRE and bounds["x"] + bounds["w"] or bounds["x"] + bounds["w"] - 5, bounds["y"] + bounds["h"]},
+	}
+end
+
 _Classes_Inherite({"Player", "Entity"}, CPlayer)
 
 return CPlayer

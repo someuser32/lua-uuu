@@ -73,6 +73,7 @@ function CBaseScriptAPI:get_listener_callbacks_instances()
 		"OnNPCLostItem",
 		"OnEntityHurtEvent",
 		"OnEntityKilledEvent",
+		"OnCourierLostEvent",
 		"OnParticle",
 		"OnParticleDestroyed",
 	}
@@ -254,6 +255,8 @@ function CBaseScriptAPI:OnFireEventClient(data)
 		self:fire_listener_callback("OnEntityHurtEvent", event:GetInt("entindex_killed"), event:GetInt("entindex_attacker"), event:GetInt("entindex_inflictor"), event:GetFloat("damage"))
 	elseif data["name"] == "entity_killed" then
 		self:fire_listener_callback("OnEntityKilledEvent", event:GetInt("entindex_killed"), event:GetInt("entindex_attacker"), event:GetInt("entindex_inflictor"))
+	elseif data["name"] == "dota_courier_lost" then
+		self:fire_listener_callback("OnCourierLostEvent", event:GetInt("killerid"), event:GetInt("teamnumber"), event:GetInt("bounty_gold"))
 	end
 end
 

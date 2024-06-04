@@ -26,8 +26,9 @@ function TormentorESP:initialize()
 	self.move_key = UILib:CreateKeybind({self.path, "Panel"}, "Move key", Enum.ButtonCode.KEY_LCONTROL)
 	self.move_key:SetIcon("~/MenuIcons/drag_def.png")
 	self.reset_panel_positions = UILib:CreateButton({self.path, "Panel"}, "Reset positions", function()
+		local screen_width, screen_height = CRenderer:GetScreenSize()
 		for team, info in pairs(self.tormentor_teams) do
-			CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"]))
+			CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(screen_width/2+info["default_offset_x"]))
 			CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))
 		end
 	end)
@@ -81,8 +82,9 @@ function TormentorESP:DrawHPBarWithDrag(x, y, color, border_color, fill, text, t
 		if ((cursor_position[1] > bounds_min[1] and cursor_position[1] < bounds_max[1]) and (cursor_position[2] > bounds_min[2] and cursor_position[2] < bounds_max[2])) or (self.mouse_previous_position ~= nil and self.mouse_previous_position[2] == team) then
 			if self.mouse_previous_position ~= nil then
 				local dt = {cursor_position[1] - self.mouse_previous_position[1][1], cursor_position[2] - self.mouse_previous_position[1][2]}
-				CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(x+dt[1]))
-				CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(y+dt[2]))
+				local screen_width, screen_height = CRenderer:GetScreenSize()
+				CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(math.min(math.max(x+dt[1], self.hp_panel_width/2), screen_width-self.hp_panel_width/2)))
+				CConfig:WriteInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(math.min(math.max(y+dt[2], self.hp_panel_height/2), screen_height-self.hp_panel_height/2)))
 			end
 			self.mouse_previous_position = {cursor_position, team}
 		end
@@ -162,10 +164,11 @@ function TormentorESP:OnDraw()
 		local is_move_key_down = self.move_key:IsActive()
 		local cx, cy = CInput:GetCursorPos()
 		local ingame = CGameRules:GetIngameTime()
+		local screen_width, screen_height = CRenderer:GetScreenSize()
 		for team, info in pairs(table.copy(self.tormentor_teams)) do
 			local entindex = self.tormentors[team]
 			local tormentor = CNPC:FromIndex(entindex)
-			local pos = {CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(1920/2+info["default_offset_x"])), CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))}
+			local pos = {CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_x"), math.floor(screen_width/2+info["default_offset_x"])), CConfig:ReadInt("magma_tormentor_esp", tostring("panel_"..team.."_y"), math.floor(85+2+info["default_offset_y"]))}
 			if tormentor or entindex then
 				local attackers = table.keys(self.tormentors_attackers[entindex] or {})
 				local enemy_attackers = {}

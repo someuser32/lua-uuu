@@ -248,12 +248,12 @@ function TreeDestroyerExtended:OnParticle(particle)
 		end
 	end
 	local tree_types = {
-		["particles/items_fx/ironwood_tree.vpcf"] = "item_branches",
-		["particles/units/heroes/hero_furion/furion_sprout.vpcf"] = "furion_sprout",
-		["particles/units/heroes/hero_hoodwink/hoodwink_acorn_shot_tree.vpcf"] = "hoodwink_acorn_shot",
-		["particles/units/heroes/hero_hoodwink/hoodwink_bushwhack_projectile.vpcf"] = "hoodwink_bushwhack",
+		["ironwood_tree"] = "item_branches",
+		["furion_sprout"] = "furion_sprout",
+		["hoodwink_acorn_shot_tree"] = "hoodwink_acorn_shot",
+		["hoodwink_bushwhack_projectile"] = "hoodwink_bushwhack",
 	}
-	local tree_type = tree_types[particle["name"]]
+	local tree_type = tree_types[particle["shortname"]]
 	if tree_type ~= nil then
 		local owner = nil
 		local trees = {}
@@ -292,6 +292,7 @@ function TreeDestroyerExtended:OnParticle(particle)
 			local position = particle["control_points"][0][1]["position"]
 			local radius = particle["control_points"][1][1]["position"].y
 			trees = table.combine(trees, CTempTree:FindInRadius(position, radius+48))
+			center = position
 		elseif tree_type == "hoodwink_bushwhack" then
 			local position = particle["control_points"][1][1]["position"]
 			local radius = self:GetBushwhackRadius(owner)
@@ -483,7 +484,10 @@ end
 ---@return CEntity
 function TreeDestroyerExtended:IsInsideFurionSprouts(hero, center)
 	local heroPos = hero:GetAbsOrigin()
-	local sprouts = table.values(table.filter(CTempTree:FindInRadius(center, 150+64), function(_, tree) return math.abs(150-(tree:GetAbsOrigin()-center):Length2D()) < 5 end))
+	local sprouts = table.values(table.filter(CTempTree:FindInRadius(center, 150+64), function(_, tree)
+		local distance = (tree:GetAbsOrigin()-center):Length2D()
+		return math.abs(150-distance) < 5
+	end))
 	local trees = CTempTree:FindInRadius(heroPos, 150+128)
 	if #trees < self.furion_sprout_count or #sprouts < self.furion_sprout_count then
 		return false
@@ -611,7 +615,7 @@ function TreeDestroyerExtended:UsableAbilitiesFilter(target, tree_type)
 		local caster = ability:GetCaster()
 		local ability_name = ability:GetName()
 		if ability_name == "item_tango" then
-			local tango_usage = self.tree_destroyer_cut_targets[tree_type.."_tango_usage"]:get_selected_index()
+			local tango_usage = self.tree_destroyer_cut_targets[tree_type.."_tango_usage"]:GetIndex()
 			if tango_usage == 1 then
 				return true
 			elseif tango_usage == 2 then

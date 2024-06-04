@@ -458,7 +458,7 @@ function CNPC:GetUsableAbilities(ability_names, target, linken_breaker, spell_re
 							local ability_linken_breaker = (type(linken_breaker) == "function" and {linken_breaker(ability)} or {linken_breaker})[1]
 							if is_ally or (not ability_linken_breaker or not is_triggers_linken or LinkenBreaker:CanUseAbility(ability, target, ability_linken_breaker, nil, ability_name)) then
 								local ability_spell_reflect = (type(spell_reflect) == "function" and {spell_reflect(ability)} or {spell_reflect})[1]
-								if is_ally or (not ability_spell_reflect or not is_triggers_linken or SpellReflect:CanUse(ability, target, ability_spell_reflect[1], ability_spell_reflect[2])) then
+								if is_ally or (not ability_spell_reflect or not is_triggers_linken or SpellReflect:CanUse(ability, target, ability_spell_reflect[1], ability_spell_reflect[2], ability_spell_reflect[3])) then
 									table.insert(usable_abilities, ability)
 								end
 							end
@@ -610,6 +610,15 @@ end
 ---@return boolean
 function CNPC:IsLotusPool()
 	return self:GetClassName() == "C_DOTA_BaseNPC_MangoTree"
+end
+
+---@return CPlayer?
+function CNPC:GetPlayerOwner()
+	local owner = self:RecursiveGetOwner()
+	if owner == nil then
+		return nil
+	end
+	return CPlayer:new(owner.ent)
 end
 
 _Classes_Inherite({"Entity", "NPC"}, CNPC)

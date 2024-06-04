@@ -23,6 +23,8 @@ CNetChannel = require("libraries/classes/Dota/NetChannel")
 CRenderer = require("libraries/classes/Dota/Renderer")
 CSteam = require("libraries/classes/Dota/Steam")
 CWorld = require("libraries/classes/Dota/World")
+CPanorama = require("libraries/classes/Dota/Panorama")
+CUIPanel = require("libraries/classes/Dota/UIPanel")
 
 CEntity = require("libraries/classes/Dota/Entity")
 CCamp = require("libraries/classes/Dota/Camp")
