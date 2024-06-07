@@ -93,7 +93,7 @@ function AutoReveal:Trigger(enemy, enemy_pos)
 	end), {{"item_ward_dispenser", nil, true}})
 	local abilities_filter = self:UsableAbilitiesFilter(enemy)
 	for _, unit in pairs(CNPC:GetControllableUnits(enemy_pos, search_range, true)) do
-		if unit:RecursiveGetOwner() == local_player or self.allies_select:IsSelected(unit:GetUnitName()) then
+		if unit:RecursiveGetOwner() == local_player or self.allies_select:IsSelected(unit:GetUnitName()) and unit:IsAlive() then
 			if (self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble()) then
 				if AntiOverwatch:CanUseAtCamera(unit, enemy_pos, self.anti_overwatch_camera) then
 					if Conditions:CanUse(unit, self.conditions_invis, self.conditions_channeling) then

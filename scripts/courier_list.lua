@@ -45,11 +45,12 @@ function CourierList:OnMenuOptionChange(option, oldValue, newValue)
 end
 
 function CourierList:DrawPanel(position)
+	local max_height = self.courier_icon_size + self.hero_icon_size * math.max(5, #self.enemies) + 4
 	local now = CGameRules:GetGameTime()
 	CRenderer:SetDrawColor(0, 0, 0, 50)
-	CRenderer:DrawFilledRect(position[1], position[2], self.max_width, self.max_height)
+	CRenderer:DrawFilledRect(position[1], position[2], self.max_width, max_height)
 	CRenderer:SetDrawColor(10, 10, 10, 125)
-	CRenderer:DrawOutlineRect(position[1], position[2], self.max_width, self.max_height)
+	CRenderer:DrawOutlineRect(position[1], position[2], self.max_width, max_height)
 	CRenderer:SetDrawColor(255, 255, 255, 255)
 	CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage("~/MenuIcons/Dota/Courier_Donkey.png"), position[1]+(self.max_width-4)/2, position[2]+self.courier_icon_size/2, self.courier_icon_size, self.courier_icon_size)
 	for _, enemy_data in pairs(self.enemies) do

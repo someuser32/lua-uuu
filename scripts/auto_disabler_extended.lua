@@ -342,7 +342,7 @@ function AutoDisablerExtended:Trigger(ability, phase, caster)
 	end)
 	local abilities_filter = self:UsableAbilitiesFilter(caster, ability)
 	for _, unit in pairs(CNPC:GetControllableUnits(caster_pos, search_range, true)) do
-		if (self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble()) then
+		if (self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble()) and unit:IsAlive() then
 			if AntiOverwatch:CanUseAtCamera(unit, caster_pos, self.anti_overwatch_camera) then
 				if Conditions:CanUse(unit, self.conditions_invis, self.conditions_channeling) then
 					local disable_ability = unit:GetUsableAbilities(abilities, caster, function(ability) return self:GetAbilityInfo(ability:GetName())["linken_breaker"] end, function(ability) return self:GetAbilityInfo(ability:GetName())["spell_reflect"] end, abilities_filter)[1]

@@ -307,13 +307,14 @@ end
 ---@param position Vector
 ---@param radius number
 ---@param local_priority boolean?
+---@param include_illusions boolean?
 ---@return CNPC[]
-function CNPC:GetControllableUnits(position, radius, local_priority)
+function CNPC:GetControllableUnits(position, radius, local_priority, include_illusions)
 	local units = {}
 	local local_player = CPlayer:GetLocal()
 	local local_player_id = local_player:GetPlayerID()
 	for _, unit in pairs(CNPC:FindInRadius(position, radius, CPlayer:GetLocalTeam(), Enum.TeamType.TEAM_FRIEND)) do
-		if unit:IsEntity() and unit:IsControllableByPlayer(local_player_id) then
+		if unit:IsEntity() and unit:IsControllableByPlayer(local_player_id) and (include_illusions or not unit:IsIllusion()) then
 			table.insert(units, unit)
 		end
 	end
