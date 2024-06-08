@@ -627,7 +627,7 @@ function TreeDestroyerExtended:UsableAbilitiesFilter(target, tree_type)
 				end)), function(_, ability_name)
 					return {ability_name, range_buffer, nil}
 				end)
-				return not caster:HasModifier("modifier_tango_heal") or #caster:GetUsableAbilities(abilities, tree, self:UsableAbilitiesFilter(target, tree_type)) == 0
+				return not caster:HasModifier("modifier_tango_heal") or #caster:GetUsableAbilities(abilities, target, self:UsableAbilitiesFilter(target, tree_type)) == 0
 			end
 		end
 		return true
