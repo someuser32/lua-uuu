@@ -346,9 +346,9 @@ function TreeDestroyerExtended:TriggerDestroyTrees(entities, position, tree_type
 	if not self.tree_destroyer_cut_targets[tree_type.."_enable"]:Get() then return false end
 	if #entities <= 0 then return false end
 	local local_hero = CHero:GetLocal()
-	for _, unit in pairs(CNPC:GetControllableUnits(position, 900, true)) and unit:IsAlive() do
+	for _, unit in pairs(CNPC:GetControllableUnits(position, 900, true)) do
 		local distance = (unit:GetAbsOrigin() - position):Length2D()
-		if (unit == local_hero or self.tree_destroyer_cut_targets[tree_type.."_allies"]:IsSelected(unit:GetUnitName())) and ((self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble())) then
+		if (unit == local_hero or self.tree_destroyer_cut_targets[tree_type.."_allies"]:IsSelected(unit:GetUnitName())) and ((self.additional_usage:IsSelected("spirit_bear") or not unit:IsSpiritBear()) and (self.additional_usage:IsSelected("tempest_double") or not unit:IsTempestDouble())) and unit:IsAlive() then
 			if Conditions:CanUse(unit, self.conditions_invis, self.conditions_channeling) then
 				if tree_type == "furion_sprout" then
 					if self:IsInsideFurionSprouts(unit, position) and not unit:CanPathThroughTrees() then
