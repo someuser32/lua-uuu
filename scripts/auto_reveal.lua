@@ -44,6 +44,7 @@ function AutoReveal:initialize()
 	self.listeners = {}
 
 	self.revealed_enemies = {}
+	self.triggered_enemies = {}
 end
 
 function AutoReveal:OnUpdate()
@@ -51,8 +52,13 @@ function AutoReveal:OnUpdate()
 	local tick = self:GetTick()
 	if tick % 2 == 0 then
 		for _, enemy in pairs(CHero:GetEnemies()) do
-			if self.revealed_enemies[enemy:GetIndex()] == nil and self:CanEnemyBeRevealed(enemy) and not enemy:HasModifier("modifier_nyx_assassin_vendetta") then
-				self:Trigger(enemy)
+			if self:CanEnemyBeRevealed(enemy) and not enemy:HasModifier("modifier_nyx_assassin_vendetta") then
+				local entindex = enemy:GetIndex()
+				if self.revealed_enemies[entindex] == nil and self.triggered_enemies[entindex] == nil then
+					self:Trigger(enemy)
+				end
+			else
+				self.triggered_enemies[enemy:GetIndex()] = nil
 			end
 		end
 	end
@@ -85,6 +91,7 @@ end
 ---@return boolean
 function AutoReveal:Trigger(enemy, enemy_pos)
 	if not self.enable:Get() then return false end
+	self.triggered_enemies[enemy:GetIndex()] = true
 	enemy_pos = enemy_pos or enemy:GetAbsOrigin()
 	local search_range = 2500
 	local local_player = CPlayer:GetLocal()
