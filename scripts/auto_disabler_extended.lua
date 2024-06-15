@@ -33,6 +33,7 @@ function AutoDisablerExtended:initialize()
 		{"shadow_demon_disruption", true},
 		{"lone_druid_savage_roar", false},
 		{"silencer_global_silence", false},
+		{"tinker_warp_grenade", true},
 	}
 
 	self.trigger_abilities = {
@@ -90,6 +91,9 @@ function AutoDisablerExtended:initialize()
 	self.auto_disabler_aggressive_always:SetIcon("~/MenuIcons/Enable/enable_ios.png")
 	self.auto_disabler_aggressive_always:SetTip("Enables aggressive disabler without holding key\nHighly not recommended to use this option!\n[OVERWATCH RISK]")
 	self.auto_disabler_aggressive_disable_abilities_order = UILib:CreateMultiselect({self.path, "Aggressive Disabler"}, "Your abilities", table.map(self.disable_abilities, function(_, info) return {info[1], CAbility:GetAbilityNameIconPath(info[1]), info[2]} end), false)
+	self.auto_disabler_aggressive_range = UILib:CreateSlider({self.path, "Aggressive Disabler"}, "Aggressive radius", 0, 1200, 0)
+	self.auto_disabler_aggressive_range:SetIcon("~/MenuIcons/radius.png")
+	self.auto_disabler_aggressive_range:SetTip("Set 0 to match ability's range")
 	self.auto_disabler_aggressive_enemies = UILib:CreateMultiselectFromEnemies({self.path, "Aggressive Disabler"}, "Aggressive enemies", false, false, true)
 	UILib:SetTabIcon({self.path, "Aggressive Disabler"}, "~/MenuIcons/enemy_evil.png")
 
@@ -336,6 +340,12 @@ function AutoDisablerExtended:Trigger(ability, phase, caster)
 	if caster:IsDisabled() then return false end
 	local caster_pos = caster:GetAbsOrigin()
 	local search_range = 2500
+	if ability == nil then
+		local aggressive_range = self.auto_disabler_aggressive_range:Get()
+		if aggressive_range > 0 then
+			search_range = aggressive_range
+		end
+	end
 	local abilities = table.map(ability ~= nil and self.auto_disabler_disable_abilities_order:Get() or self.auto_disabler_aggressive_disable_abilities_order:Get(), function(_, ability_name)
 		local ability_info = self:GetAbilityInfo(ability_name)
 		return {ability_name, ability_info["range_buffer"] ~= nil and ability_info["range_buffer"]:Get() or 0, nil}

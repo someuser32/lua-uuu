@@ -504,6 +504,11 @@ function CNPC:IsTempestDouble()
 end
 
 ---@return boolean
+function CNPC:IsIllusion()
+	return self:APIIsIllusion() and not self:IsTempestDouble()
+end
+
+---@return boolean
 function CNPC:IsVengefulSpiritIllusion()
 	return self:HasModifier("modifier_vengefulspirit_command_aura_illusion")
 end
