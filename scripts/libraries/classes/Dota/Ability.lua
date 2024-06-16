@@ -201,16 +201,40 @@ function CAbility:GetName(general)
 	return general and self:GetNameGeneral() or self:APIGetName()
 end
 
----@param behavior Enum.AbilityBehavior
+---@param ... Enum.AbilityBehavior
 ---@return boolean
-function CAbility:HasBehavior(behavior)
-	return (self:GetBehavior() & behavior) == behavior
+function CAbility:HasBehavior(...)
+	local behavior = self:GetBehavior()
+	for _, beh in pairs({...}) do
+		if (behavior & beh) == beh then
+			return true
+		end
+	end
+	return false
 end
 
----@param flag Enum.TargetFlags
+---@param ... Enum.TargetTeam
 ---@return boolean
-function CAbility:HasFlag(flag)
-	return (self:GetTargetFlags() & flag) == flag
+function CAbility:HasTargetTeam(...)
+	local target_team = self:GetTargetTeam()
+	for _, team in pairs({...}) do
+		if (target_team & team) == team then
+			return true
+		end
+	end
+	return false
+end
+
+---@param ... Enum.TargetFlags
+---@return boolean
+function CAbility:HasFlag(...)
+	local flag = self:GetTargetFlags()
+	for _, fl in pairs({...}) do
+		if (flag & fl) == fl then
+			return true
+		end
+	end
+	return false
 end
 
 ---@param team Enum.TeamNum
@@ -224,15 +248,14 @@ function CAbility:CanTargetTeam(team)
 	if table.contains(exceptions, self:GetName()) then
 		return true
 	end
-	local target_team = self:GetTargetTeam()
-	if table.contains({Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_BOTH, Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_NONE, Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_CUSTOM}, target_team) then
+	if self:HasTargetTeam(Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_BOTH, Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_NONE, Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_CUSTOM) then
 		return true
 	end
 	local localteam = self:GetCaster():GetTeamNum()
 	if localteam == team then
-		return target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_FRIENDLY
+		return self:HasTargetTeam(Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_FRIENDLY)
 	end
-	return target_team == Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_ENEMY
+	return self:HasTargetTeam(Enum.TargetTeam.DOTA_UNIT_TARGET_TEAM_ENEMY)
 end
 
 ---@param position Vector

@@ -505,7 +505,7 @@ function TreeDestroyerExtended:GetBestTreeForFurionSprout(entities, hero)
 	if cut_option == 1 then
 		direction = hero:GetRotation():GetForward()
 	elseif cut_option == 2 or cut_option == 3 then
-		local enemies = CHero:FindInRadius(heroPos, 900, hero:GetTeamNum(), Enum.TeamType.TEAM_ENEMY)
+		local enemies = CHero:FindInRadius(heroPos, 900, hero:GetTeamNum(), Enum.TeamType.TEAM_ENEMY, true)
 		if #enemies <= 0 then
 			if cut_option == 2 then
 				direction = hero:GetRotation():GetForward()

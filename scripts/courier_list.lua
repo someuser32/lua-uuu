@@ -54,7 +54,7 @@ function CourierList:DrawPanel(position)
 	CRenderer:SetDrawColor(255, 255, 255, 255)
 	CRenderer:DrawImageCentered(CRenderer:GetOrLoadImage("~/MenuIcons/Dota/Courier_Donkey.png"), position[1]+(self.max_width-4)/2, position[2]+self.courier_icon_size/2, self.courier_icon_size, self.courier_icon_size)
 	for _, enemy_data in pairs(self.enemies) do
-		local hero, hero_name, playerID = table.unpack(enemy_data)
+		local playerID, hero_name = table.unpack(enemy_data)
 		local respawn_time = math.floor(math.max((self.courier_respawns[playerID] or 0) - now, 0))
 		local x, y = position[1]+2, position[2]+2+self.courier_icon_size+self.hero_icon_size*(_-1)
 		CRenderer:SetDrawColor(255, 255, 255, 255)
@@ -101,10 +101,7 @@ end
 
 function CourierList:UpdateCouriersInfo()
 	if not self.enable:Get() then return end
-	self.enemies = table.map(CHero:GetEnemies(), function(_, hero)
-		local player = hero:GetPlayerOwner()
-		return {hero, hero:GetUnitName(), player ~= nil and player:GetPlayerID() or -1}
-	end)
+	self.enemies = table.values(table.map(CHero:GetEnemiesHeroNames(), function(playerID, hero_name) return {playerID, hero_name} end))
 	for _, courier in pairs(CCourier:GetAll()) do
 		local player = courier:GetOwner()
 		if player then

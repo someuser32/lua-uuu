@@ -35,8 +35,21 @@ end
 ---@param radius number
 ---@param teamNum Enum.TeamNum
 ---@param teamType Enum.TeamType
+---@param include_dormant boolean?
 ---@return CHero[]
-function CHero.static:FindInRadius(vec, radius, teamNum, teamType)
+function CHero.static:FindInRadius(vec, radius, teamNum, teamType, include_dormant)
+	if include_dormant then
+		local heroes = {}
+		for _, hero in pairs(CHero:GetAll()) do
+			local team = hero:GetTeamNum()
+			if teamType == Enum.TeamType.TEAM_BOTH or (teamType == Enum.TeamType.TEAM_FRIEND and teamNum == team) or (teamType == Enum.TeamType.TEAM_ENEMY and teamNum ~= team) then
+				if (hero:GetAbsOrigin()-vec):Length2D() <= radius then
+					table.insert(heroes, hero)
+				end
+			end
+		end
+		return heroes
+	end
 	return self:StaticAPICall("InRadius", Heroes.InRadius, vec, radius, teamNum, teamType)
 end
 
