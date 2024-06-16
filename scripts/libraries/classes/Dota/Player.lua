@@ -52,7 +52,11 @@ end
 
 ---@return Enum.TeamNum
 function CPlayer.static:GetLocalTeam()
-	return self:GetLocal():GetTeamNum()
+	local localplayer = self:GetLocal()
+	if localplayer == nil then
+		return Enum.TeamNum.TEAM_NONE
+	end
+	return localplayer:GetTeamNum()
 end
 
 ---@return integer
