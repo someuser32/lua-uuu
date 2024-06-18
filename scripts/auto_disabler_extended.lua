@@ -220,7 +220,7 @@ function AutoDisablerExtended:OnUpdate()
 		if self.auto_disabler_aggressive_key:IsActive() or self.auto_disabler_aggressive_always:Get() then
 			if self.disabling ~= true then
 				for _, hero in pairs(CHero:GetEnemies()) do
-					if self.auto_disabler_aggressive_enemies:IsSelected(hero:GetUnitName()) and hero:IsVisible() then
+					if self.auto_disabler_aggressive_enemies:IsSelected(hero:GetUnitName()) and hero:IsAlive() and hero:IsVisible() then
 						self:Trigger(nil, nil, hero)
 					end
 				end
