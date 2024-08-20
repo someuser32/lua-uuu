@@ -1,1 +1,0 @@
-AbilitySearchLevel = Enum()

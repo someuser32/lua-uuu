@@ -1,0 +1,79 @@
+-- NOTE: FIXED
+
+
+local DOTA_ITEM_SLOT_7 = 6
+local DOTA_ITEM_SLOT_8 = 7
+local DOTA_ITEM_SLOT_9 = 8
+local DOTA_ITEM_NEUTRAL_SLOT = 16
+
+local SLOTS = {DOTA_ITEM_SLOT_7, DOTA_ITEM_SLOT_8, DOTA_ITEM_SLOT_9, DOTA_ITEM_NEUTRAL_SLOT}
+local FREE_SLOTS = {DOTA_ITEM_SLOT_9, DOTA_ITEM_SLOT_8, DOTA_ITEM_SLOT_7}
+
+local PHILOSOPHER_STONE_NAME = "item_philosophers_stone"
+
+local category = Menu.Create("Miscellaneous", "Exploits", "Lone Druid Gold")
+category:Icon("")
+
+local menu_main = category:Create("Main")
+local settings = menu_main:Create("Settings")
+
+local key = settings:Switch("Enable", false, "")
+
+local tick = 0
+
+return {
+	OnUpdate = function()
+		tick = tick + 1
+		if key:Get() then
+			if tick % 5 == 0 then
+				local localhero = Heroes.GetLocal()
+				if localhero and Entity.IsAlive(localhero) then
+					local summon_bear = NPC.GetAbility(localhero, "lone_druid_spirit_bear")
+					if summon_bear ~= nil then
+						local bear = CustomEntities.GetSpiritBear(summon_bear)
+						if bear ~= nil then
+							local philosopher_slot = nil
+							local philosopher = nil
+							for _, i in pairs(SLOTS) do
+								local item = NPC.GetItemByIndex(localhero, i)
+								if item ~= nil and Ability.GetName(item) == PHILOSOPHER_STONE_NAME then
+									philosopher_slot = i
+									philosopher = item
+									break
+								end
+							end
+							if philosopher_slot and philosopher then
+								local charges = Item.GetCurrentCharges(philosopher)
+								if charges < 3 then
+									local localplayer = Players.GetLocal()
+									if philosopher_slot ~= DOTA_ITEM_NEUTRAL_SLOT then
+										local owner = Item.GetPlayerOwnerID(philosopher)
+										local localplayerid = Player.GetPlayerID(localplayer)
+										if (owner ~= localplayerid) or (not NPC.IsInRangeOfShop(localhero)) then
+											Player.PrepareUnitOrders(localplayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_ITEM, DOTA_ITEM_NEUTRAL_SLOT, Vector(0, 0, 0), philosopher, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localhero, false, true)
+										end
+									else
+										local bear_philosopher = NPC.GetItem(bear, PHILOSOPHER_STONE_NAME, true)
+										if bear_philosopher == nil then
+											local free_slot = nil
+											for _, i in pairs(FREE_SLOTS) do
+												local item = NPC.GetItemByIndex(localhero, i)
+												if item == nil then
+													free_slot = i
+													break
+												end
+											end
+											if free_slot ~= nil then
+												Player.PrepareUnitOrders(localplayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_ITEM, free_slot, Vector(0, 0, 0), philosopher, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localhero, false, true)
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+}

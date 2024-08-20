@@ -1,4 +1,0 @@
-{
-	"diagnostics.ignoredFiles": "Disable",
-	"workspace.ignoreDir": ["default_api.txt", "non_default_api.txt", "locale.lua"]
-}

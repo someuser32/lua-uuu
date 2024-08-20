@@ -1,32 +1,44 @@
-require("libraries/__init__")
+require("xlib/__init__")
 
-local IPos = class("IPos")
+local IPos = {}
 
-function IPos:initialize()
-	self.path = {"Magma", "Utility", "IPos"}
+function IPos:Init()
+	self.menu = Menu.Create("Info Screen", "Utility", "IPos") --[[@as CSecondTab]]
+	self.menu:Icon("")
 
-	self.enable = UILib:CreateCheckbox(self.path, "Enable", false)
-	self.enable:SetTip("Shows useful positions on map:\n- Roshan blind spots\n- Fountain invis positions (you must be in invisibility)\n- Camp block helper\n- Ward helper\n\nUPDATED AT: 04.05.24 (7.35d)")
+	self.menu_main = self.menu:Create("Main")
 
-	self.show_key = UILib:CreateKeybind(self.path, "Show key", Enum.ButtonCode.KEY_LCONTROL)
+	self.menu_settings = self.menu_main:Create("Settings")
 
-	UILib:SetTabIcon(self.path, "~/MenuIcons/google_maps.png")
+	self.enable = self.menu_settings:Switch("Enable", false)
+	self.enable:Icon("")
+	self.enable:ToolTip("UPDATED AT: 04.05.24 (7.35d)")
 
-	self.positions = {
-		-- top roshan
+	self.enable_gear = self.enable:Gear("Show Positions")
+	self.enable_roshan_positions = self.enable_gear:Switch("Roshan", false)
+	self.enable_roshan_positions:Icon("")
+	self.enable_fountain_positions = self.enable_gear:Switch("Fountain", false)
+	self.enable_fountain_positions:Icon("")
+	self.enable_wards = self.enable_gear:Switch("Wards", true)
+	self.enable_wards:Icon("")
+
+	self.roshan_positions = {
+		-- top
 		Vector(-7333.53, 7582.62, 0.4375),
         Vector(-7463, 7417.81, 9.25),
         Vector(-7576.34, 7292.47, 8.0625),
-		-- bot roshan
+		-- bot
         Vector(7655.28, -7463.38, 7.625),
         Vector(7497.16, -7605.5, 6.3125),
         Vector(7360.06, -7783.78, 0),
+	}
 
-		-- radiant invis fountain
+	self.fountain_positions = {
+		-- radiant
 		Vector(6360.78, 6198.5, 374.031),
 		Vector(6726.31, 5830.59, 372.094),
 		Vector(6489.22, 5981.31, 347.969),
-		-- dire invis fountain
+		-- dire
 		Vector(-6878.84, -5855.91, 352.094),
 		Vector(-6360.28, -6362.41, 349.219),
 	}
@@ -129,55 +141,57 @@ function IPos:initialize()
 
 	self.circle_radius = 10
 
-	self.listeners = {}
+	self.is_mouse_down = false
+	self.mouse_position = Vec2(0, 0)
+end
+
+function IPos:DrawPosition(position, color, color_hover, can_move)
+	local screen_position, visible = Render.WorldToScreen(position)
+	if not visible then return end
+	local is_hover = math.abs(screen_position.x-self.mouse_position.x) < self.circle_radius and math.abs(screen_position.y-self.mouse_position.y) < self.circle_radius
+	if color_hover ~= nil and is_hover then
+		color = color_hover
+	end
+	Render.Circle(screen_position, self.circle_radius, color, nil, nil, nil, nil, self.circle_radius*2)
+	if can_move then
+		if self.is_mouse_down and is_hover then
+			local units = Player.GetSelectedUnits(Players.GetLocal())
+			NPC.MoveTo(units[1], position, Input.IsKeyDown(Enum.ButtonCode.KEY_LSHIFT), true, true, false)
+		end
+	end
 end
 
 function IPos:OnDraw()
 	if not self.enable:Get() then return end
-	local active_ability = CPlayer:GetActiveAbility()
-	local cx, cy = CInput:GetCursorPos()
-	if self.show_key:IsActive() or self.show_key:Get() == Enum.ButtonCode.KEY_NONE then
-		local is_key_down = CInput:IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
-		for _, position in pairs(self.positions) do
-			local x, y, visible = CRenderer:WorldToScreen(position)
-			if visible then
-				CRenderer:SetDrawColor(245, 245, 245, 255)
-				CRenderer:DrawOutlineCircle(x, y, self.circle_radius, self.circle_radius*2)
-				if is_key_down and math.abs(x-cx) < self.circle_radius and math.abs(y-cy) < self.circle_radius then
-					local units = CPlayer:GetSelectedUnits()
-					units[1]:MoveTo(position, false, true, true)
-				end
-			end
+	local localplayer = Players.GetLocal()
+	local active_ability = Player.GetActiveAbility(localplayer)
+	self.mouse_position = Vec2(Input.GetCursorPos())
+	self.is_mouse_down = Input.IsKeyDownOnce(Enum.ButtonCode.KEY_MOUSE1)
+	if self.enable_roshan_positions:Get() then
+		for _, position in pairs(self.roshan_positions) do
+			self:DrawPosition(position, Color(245, 245, 245, 255), nil, true)
 		end
 	end
-	if active_ability ~= nil then
-		local ability_name = active_ability:GetName(true)
+	if self.enable_fountain_positions:Get() then
+		for _, position in pairs(self.roshan_positions) do
+			self:DrawPosition(position, Color(245, 245, 245, 255), nil, true)
+		end
+	end
+	if self.enable_wards:Get() and active_ability ~= nil then
+		local ability_name = Ability.GetName(active_ability)
+		if ability_name == "item_ward_dispenser" then
+			ability_name = Ability.GetToggleState(active_ability) and "item_ward_observer" or "item_ward_sentry"
+		end
 		if ability_name == "item_ward_observer" then
 			for _, position in pairs(self.ward_positions["observer"]) do
-				local x, y, visible = CRenderer:WorldToScreen(position)
-				if visible then
-					if math.abs(x-cx) < self.circle_radius and math.abs(y-cy) < self.circle_radius then
-						CRenderer:SetDrawColor(245, 5, 5, 255)
-					else
-						CRenderer:SetDrawColor(245, 245, 5, 255)
-					end
-					CRenderer:DrawOutlineCircle(x, y, self.circle_radius, self.circle_radius*2)
-				end
+				self:DrawPosition(position, Color(245, 245, 5, 255), Color(245, 5, 5, 255), false)
 			end
 		elseif ability_name == "item_ward_sentry" then
 			for _, position in pairs(self.ward_positions["sentry"]) do
-				local x, y, visible = CRenderer:WorldToScreen(position)
-				if visible then
-					if math.abs(x-cx) < self.circle_radius and math.abs(y-cy) < self.circle_radius then
-						CRenderer:SetDrawColor(245, 5, 5, 255)
-					else
-						CRenderer:SetDrawColor(5, 245, 245, 255)
-					end
-					CRenderer:DrawOutlineCircle(x, y, self.circle_radius, self.circle_radius*2)
-				end
+				self:DrawPosition(position, Color(5, 245, 245, 255), Color(245, 5, 5, 255), false)
 			end
 		end
 	end
 end
 
-return BaseScriptAPI(IPos)
+return BaseScript(IPos)
