@@ -37,6 +37,20 @@ function NPC.GetAbilities(npc, include_all)
 end
 
 ---@param npc userdata
+---@param name string
+---@param isReal boolean?
+---@return userdata?
+function NPC.GetAbilityOrItemByName(npc, name, isReal)
+	if Ability.IsItemName(name) then
+		local item = NPC.GetItem(npc, name, isReal)
+		if item then
+			return item
+		end
+	end
+	return NPC.GetAbility(npc, name)
+end
+
+---@param npc userdata
 ---@param lotus_pool userdata
 ---@param queue boolean?
 ---@param showeffects boolean?

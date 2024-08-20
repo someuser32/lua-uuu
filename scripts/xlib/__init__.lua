@@ -33,6 +33,10 @@ require("xlib/api/extend/Enum")
 require("xlib/api/extend/GameRules")
 require("xlib/api/extend/Item")
 require("xlib/api/extend/NPC")
+require("xlib/api/extend/Particle")
+require("xlib/api/extend/Player")
+require("xlib/api/extend/World")
+require("xlib/api/extend/util")
 
 BaseScript = require("xlib/api/base_script")
 

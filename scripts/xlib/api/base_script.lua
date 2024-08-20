@@ -57,21 +57,23 @@ end
 
 function BaseScriptAPI:SendCustomCallback(callback_name, callback_args)
 	for _, uscript in pairs(self.uscripts) do
-		if type(uscript.instance[callback_name]) == "callback" and self:CanSendCustomCallbackToUScript(uscript, callback_name) then
-			uscript.instance[callback_name](table.unpack(callback_args))
+		if type(uscript.instance[callback_name]) == "function" and self:CanSendCustomCallbackToUScript(uscript, callback_name) then
+			uscript.instance[callback_name](uscript.instance, table.unpack(callback_args))
 		end
 	end
 end
 
 function BaseScriptAPI:CanSendCustomCallbackToUScript(uscript, name)
 	if type(uscript.instance[name.."Enabled"]) == "function" then
-		if uscript.instance[name.."Enabled"]() then
+		if uscript.instance[name.."Enabled"](uscript.instance) then
 			return true
 		end
 	elseif type(uscript.instance["IsCallbackEnabled"]) == "function" then
-		if uscript.instance["IsCallbackEnabled"](name) then
+		if uscript.instance["IsCallbackEnabled"](uscript.instance, name) then
 			return true
 		end
+	else
+		return true
 	end
 	return false
 end
@@ -178,8 +180,7 @@ function BaseScriptAPI:OnUpdate()
 	local now = GameRules.GetGameTime()
 	local tick = Tick()
 	if tick % 2 == 0 then
-		local localPlayer = Players.GetLocal()
-		local localTeam = Entity.GetTeamNum(localPlayer)
+		local localTeam = Player.GetLocalTeam()
 		local heroListeners = {
 			"OnHeroUsedAbility", "OnHeroUsedAbilityEnemy", "OnHeroUsedAbilityAlly",
 			"OnHeroPhaseAbility", "OnHeroPhaseAbilityEnemy", "OnHeroPhaseAbilityAlly",
@@ -288,7 +289,7 @@ function BaseScriptAPI:OnUpdate()
 		for index, particle in pairs(table.copy(self.cache.particles)) do
 			if not particle["fired_callback"] and now-particle["created_at"] > 0.03 then
 				self.cache.particles[index]["fired_callback"] = true
-				self:fire_listener_callback("OnParticle", table.merge({index=index}, particle))
+				self:SendCustomCallback("OnParticle", {table.merge({index=index}, particle)})
 			end
 		end
 	end

@@ -12,15 +12,15 @@ function LotusPickup:Init()
 	self.enable = self.menu_settings:Switch("Enable", false)
 	self.enable:Icon("")
 	self.enable:ToolTip("Pickups only if time is near to spawn")
-	self.enable:SetCallback(function(widget)
-		local enabled = widget:Get()
-		self.lotus_catcher_auto:Disabled(not enabled)
-	end, true)
 
 	self.lotus_catcher_auto = self.menu_settings:Slider("Take before min", 0, 99, 0)
 	self.lotus_catcher_auto:Icon("")
 	self.lotus_catcher_auto:ToolTip("Set 0 for always")
-	self.lotus_catcher_auto:Disabled(not self.enable:Get())
+
+	self.enable:SetCallback(function(widget)
+		local enabled = widget:Get()
+		self.lotus_catcher_auto:Disabled(not enabled)
+	end, true)
 
 	self.lotus_pools = {}
 	for _, lotus_pool in pairs(NPCs.GetAll(Enum.UnitTypeFlags.TYPE_STRUCTURE)) do
