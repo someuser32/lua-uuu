@@ -3,9 +3,10 @@ local vanilla_is_illusion = NPC.IsIllusion
 ---Returns `true` if the `userdata` is illusion.
 ---@param npc userdata npc to check
 ---@return boolean
-NPC.IsIllusion = function(npc)
-	return vanilla_is_illusion(npc) and not NPC.IsTempestDouble(npc)
-end
+-- TODO: replace with NPC.IsTrueHero
+-- NPC.IsIllusion = function(npc)
+	-- return vanilla_is_illusion(npc) and not NPC.IsTempestDouble(npc)
+-- end
 
 
 ---@param npc userdata

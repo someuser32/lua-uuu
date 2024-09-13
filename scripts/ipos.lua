@@ -3,7 +3,7 @@ require("xlib/__init__")
 local IPos = {}
 
 function IPos:Init()
-	self.menu = Menu.Create("Info Screen", "Utility", "IPos") --[[@as CSecondTab]]
+	self.menu = Menu.Create("Info Screen", "xScripts", "IPos") --[[@as CSecondTab]]
 	self.menu:Icon("")
 
 	self.menu_main = self.menu:Create("Main")
