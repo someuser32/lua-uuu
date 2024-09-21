@@ -29,3 +29,10 @@ Enum.InventorySearch = {
 	INVENTORY_STASH = {Enum.ItemSlot.SLOT_1, Enum.ItemSlot.SLOT_2, Enum.ItemSlot.SLOT_3, Enum.ItemSlot.SLOT_4, Enum.ItemSlot.SLOT_5, Enum.ItemSlot.SLOT_6, Enum.ItemSlot.SLOT_7, Enum.ItemSlot.SLOT_8, Enum.ItemSlot.SLOT_9, Enum.ItemSlot.TP_SCROLL, Enum.ItemSlot.NEUTRAL_SLOT, Enum.ItemSlot.STASH_1, Enum.ItemSlot.STASH_2, Enum.ItemSlot.STASH_3, Enum.ItemSlot.STASH_4, Enum.ItemSlot.STASH_5, Enum.ItemSlot.STASH_6},
 	BACKPACK = {Enum.ItemSlot.SLOT_7, Enum.ItemSlot.SLOT_8, Enum.ItemSlot.SLOT_9},
 }
+
+---@enum Enum.LocaleFlags
+Enum.LocaleFlags = {
+	UNKNOWN = 0,
+	OWNER = 2^1,
+	OWNER_TABLE = 2^2,
+}

@@ -3,16 +3,40 @@ require("xlib/__init__")
 local TreeDestroyerExtended = {}
 
 function TreeDestroyerExtended:Init()
-	self.menu = Menu.Create("General", "xScripts", "Items Manager") --[[@as CSecondTab]]
+	self.font = Render.LoadFont("Verdana", Enum.FontCreate.FONTFLAG_ANTIALIAS, 0)
+	self.icons = Render.LoadFont("FontAwesomeEx", Enum.FontCreate.FONTFLAG_ANTIALIAS, 0)
 
-	self.menu_main = self.menu:Create("General")
+	self.menu = Menu.Create("General", "Main", "Items Manager")
 
-	self.menu_settings = self.menu_main:Create("Trees Destroyer")
+	self.menu_main = self.menu:Create("Main")
 
-	self.enable = self.menu_settings:Switch("Enable")
+	self.menu_settings = self.menu_main:Create("Trees Destroyer (xScripts)")
 
--- 	-- self.font = CRender:LoadFont("Verdana", Enum.FontCreate.FONTFLAG_ANTIALIAS, 0)
--- 	-- self.icons = CRender:LoadFont("FontAwesomeEx", Enum.FontCreate.FONTFLAG_ANTIALIAS, 0)
+	self.enable = self.menu_settings:Switch("Enable", false)
+	self.enable:Icon("\u{f00c}")
+
+	self.panel_key = self.menu_settings:Bind("Panel key", Enum.ButtonCode.KEY_NONE)
+	self.panel_key:Icon("\u{f11c}")
+
+	self.panel = Panel.new("Trees Destroyer", function(panel)
+		local panel_size = Vec2(300, 400)
+		local panel_border_size = 1
+
+		Render.Rect(Vec2(panel.position.x-panel_border_size, panel.position.y-panel_border_size), Vec2(panel.position.x+panel_size.x+panel_border_size, panel.position.y+panel_size.y+panel_border_size), Menu.Style("outline"), 2)
+		Render.Shadow(Vec2(panel.position.x-5, panel.position.y-5), Vec2(panel.position.x+panel_size.x+5, panel.position.y+panel_size.y+5), Menu.Style("shadow"), 1.0)
+		Render.FilledRect(panel.position, Vec2(panel.position.x+panel_size.x, panel.position.y+panel_size.y), Menu.Style("main_background"), 2)
+
+		Render.Text(self.icons, 12, "\u{f1bb}", Vec2(panel.position.x+5, panel.position.y+4), Menu.Style("primary"))
+		Render.Text(self.font, 12, "Trees Destroyer", Vec2(panel.position.x+5+12+3, panel.position.y+4), Menu.Style("section_group_text"))
+
+		Render.FilledRect(Vec2(panel.position.x, panel.position.y+4+12+4), Vec2(panel.position.x+panel_size.x+2, panel.position.y+4+12+6), Menu.Style("outline"))
+
+		return panel_size
+	end, function()
+		return true
+	end)
+
+	self.panel:SetVisible(true)
 
 -- 	local destroy_abilities = {
 -- 		{"item_tango", false},
@@ -667,4 +691,4 @@ end
 -- -- 	return true
 -- -- end
 
--- return BaseScript(TreeDestroyerExtended)
+return BaseScript(TreeDestroyerExtended)

@@ -1,13 +1,26 @@
-local vanilla_is_illusion = NPC.IsIllusion
-
----Returns `true` if the `userdata` is illusion.
 ---@param npc userdata npc to check
 ---@return boolean
--- TODO: replace with NPC.IsTrueHero
--- NPC.IsIllusion = function(npc)
-	-- return vanilla_is_illusion(npc) and not NPC.IsTempestDouble(npc)
--- end
+NPC.IsTempestDouble = function(npc)
+	return NPC.HasModifier(npc, "modifier_arc_warden_tempest_double")
+end
 
+---@param npc userdata npc to check
+---@return boolean
+NPC.IsCommandAuraIllusion = function(npc)
+	return NPC.HasModifier(npc, "modifier_vengefulspirit_command_aura_illusion")
+end
+
+---@param npc userdata npc to check
+---@return boolean
+NPC.IsMonkeyClone = function(npc)
+	return NPC.HasModifier(npc, "modifier_monkey_king_fur_army_soldier")
+end
+
+---@param npc userdata npc to check
+---@return boolean
+NPC.IsTrueHero = function(npc)
+	return not NPC.IsIllusion(npc) and not NPC.IsTempestDouble(npc) and not NPC.IsCommandAuraIllusion(npc) and not NPC.IsMonkeyClone(npc)
+end
 
 ---@param npc userdata
 ---@param search Enum.InventorySearch?

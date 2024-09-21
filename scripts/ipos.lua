@@ -3,7 +3,7 @@ require("xlib/__init__")
 local IPos = {}
 
 function IPos:Init()
-	self.menu = Menu.Create("Info Screen", "xScripts", "IPos") --[[@as CSecondTab]]
+	self.menu = Menu.Create("Info Screen", "xScripts", "IPos")
 	self.menu:Icon("")
 
 	self.menu_main = self.menu:Create("Main")
@@ -11,16 +11,16 @@ function IPos:Init()
 	self.menu_settings = self.menu_main:Create("Settings")
 
 	self.enable = self.menu_settings:Switch("Enable", false)
-	self.enable:Icon("")
+	self.enable:Icon("\u{f5a0}")
 	self.enable:ToolTip("UPDATED AT: 04.05.24 (7.35d)")
 
 	self.enable_gear = self.enable:Gear("Show Positions")
 	self.enable_roshan_positions = self.enable_gear:Switch("Roshan", false)
-	self.enable_roshan_positions:Icon("")
+	self.enable_roshan_positions:Icon("\u{f2a8}")
 	self.enable_fountain_positions = self.enable_gear:Switch("Fountain", false)
-	self.enable_fountain_positions:Icon("")
+	self.enable_fountain_positions:Icon("\u{f2a8}")
 	self.enable_wards = self.enable_gear:Switch("Wards", true)
-	self.enable_wards:Icon("")
+	self.enable_wards:Icon("\u{e4bf}")
 
 	self.roshan_positions = {
 		-- top

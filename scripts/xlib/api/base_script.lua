@@ -92,6 +92,7 @@ function BaseScriptAPI:OnFrame()
 end
 
 function BaseScriptAPI:OnDraw()
+	Panels:DrawPanels()
 	self.draw_tick = self.draw_tick + 1
 	self._dt_draw = GameRules.GetGameTime()
 end

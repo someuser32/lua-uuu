@@ -1,20 +1,19 @@
 ---@class KVLib
-local KVLib = class("KVLib")
-
-function KVLib:initialize()
-	self.loaded_kvs = {}
-	self.VPK_BASE_URL = "https://raw.githubusercontent.com/spirit-bear-productions/dota_vpk_updates/main/"
-	self:GetKV("npc_heroes")
-	self:GetKV("npc_abilities")
-	self:GetKV("items")
-end
+local KVLib = {
+	loaded_kvs = {},
+	VPK_BASE_URL = "https://raw.githubusercontent.com/spirit-bear-productions/dota_vpk_updates/main/",
+}
 
 ---@param name string
----@return nil
+---@return table?
 function KVLib:LoadKVfromAssetsJSON(name)
-	local f = assert(io.open("./././assets/data/"..name..".json", "r"))
-	self.loaded_kvs[name] = json:decode(f:read("*a"))
+	local f = io.open("./././assets/data/"..name..".json", "r")
+	if f == nil then
+		return
+	end
+	self.loaded_kvs[name] = JSON:decode(f:read("*a"))
 	f:close()
+	return self.loaded_kvs[name]
 end
 
 ---@param name string
@@ -59,11 +58,9 @@ function KVLib:GetKV(name)
 	if self.loaded_kvs[name] ~= nil then
 		return self.loaded_kvs[name]
 	end
-	local f = io.open("./././assets/data/"..name..".json", "r")
-	if f ~= nil then
-		f:close()
-		self:LoadKVfromAssetsJSON(name)
-		return self:GetKV(name)
+	local kv_json = self:LoadKVfromAssetsJSON(name)
+	if kv_json then
+		return kv_json
 	end
 	return {}
 end
@@ -85,13 +82,13 @@ end
 ---@return string
 function KVLib:GetHeroAttribute(name)
 	local npc_heroes = self:GetKV("npc_heroes")
-	return npc_heroes["DOTAHeroes"][name]["AttributePrimary"] or self.npc_heroes["DOTAHeroes"]["npc_dota_hero_base"]["AttributePrimary"]
+	return npc_heroes["DOTAHeroes"][name]["AttributePrimary"] or npc_heroes["DOTAHeroes"]["npc_dota_hero_base"]["AttributePrimary"]
 end
 
 ---@param name string
 ---@return string[]
 function KVLib:GetAbilitySpecialKeys(name)
-	local kv = not CAbility:IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")
+	local kv = not Ability.IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")
 	local ability = kv["DOTAAbilities"][name]
 	if not ability then
 		return {}
@@ -99,8 +96,7 @@ function KVLib:GetAbilitySpecialKeys(name)
 	local keys = {}
 	if ability["AbilityValues"] ~= nil then
 		keys = table.combine(keys, table.keys(ability["AbilityValues"]))
-	end
-	if ability["AbilitySpecial"] ~= nil then
+	elseif ability["AbilitySpecial"] ~= nil then
 		for _, info in pairs(ability["AbilitySpecial"]) do
 			keys = table.combine(keys, table.values(info))
 		end
@@ -111,7 +107,7 @@ end
 ---@param name string
 ---@return Enum.AbilityBehavior
 function KVLib:GetAbilityBehavior(name)
-	local kv = not CAbility:IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")
+	local kv = not Ability.IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")
 	local ability = kv["DOTAAbilities"][name]
 	if not ability or ability["AbilityBehavior"] == nil then
 		return Enum.AbilityBehavior.DOTA_ABILITY_BEHAVIOR_NONE
@@ -138,4 +134,8 @@ function KVLib:GetUnitKV(name)
 	return table.merge(base_kv, kv)
 end
 
-return KVLib:new()
+KVLib:GetKV("npc_heroes")
+KVLib:GetKV("npc_abilities")
+KVLib:GetKV("items")
+
+return KVLib

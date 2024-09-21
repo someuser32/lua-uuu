@@ -3,7 +3,7 @@ require("xlib/__init__")
 local ShowMeMoreDestinations = {}
 
 function ShowMeMoreDestinations:Init()
-	self.menu = Menu.Create("Info Screen", "Main", "Show Me More") --[[@as CSecondTab]]
+	self.menu = Menu.Create("Info Screen", "Main", "Show Me More")
 
 	self.menu_main = self.menu:Find("Main")
 
@@ -13,7 +13,7 @@ function ShowMeMoreDestinations:Init()
 
 	self.menu_gear = Menu.Find("Info Screen", "Main", "Show Me More", "Main", "Maphack", "Ability Info", "Ability Info") --[[@as CMenuGearAttachment]]
 	self.show_destination = self.menu_gear:Switch("Show Spells Destination", false)
-	self.show_destination:Icon("")
+	self.show_destination:Icon("\u{e3d4}")
 
 	self.alerts_info = {
 		["hoodwink_bushwhack"] = {
@@ -190,7 +190,7 @@ function ShowMeMoreDestinations:OnEntityCreate(entity)
 							local life_time = now-start_time
 							local predict_pos = new_pos + direction * (speed * (self.sticky_bomb_duration-life_time) - (new_pos-start_pos):Length2D() + distance)
 							local end_pos = World.GetGroundPosition(predict_pos)
-							self:DrawAlert("techies_sticky_bomb", end_pos, 300, self.sticky_bomb_duration-0.01-life_time-0.01)
+							self:DrawAlert("techies_sticky_bomb", end_pos, 300, self.sticky_bomb_duration-0.01-life_time-0.01-0.1)
 							return nil
 						end
 					end

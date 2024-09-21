@@ -3,18 +3,18 @@ require("xlib/__init__")
 local LotusPickup = {}
 
 function LotusPickup:Init()
-	self.menu = Menu.Create("General", "Main", "Snatcher") --[[@as CSecondTab]]
+	self.menu = Menu.Create("General", "Main", "Snatcher")
 
 	self.menu_main = self.menu:Create("Main")
 
 	self.menu_settings = self.menu_main:Create("Lotus")
 
 	self.enable = self.menu_settings:Switch("Enable", false)
-	self.enable:Icon("")
+	self.enable:Icon("\u{f00c}")
 	self.enable:ToolTip("Pickups only if time is near to spawn")
 
 	self.lotus_catcher_auto = self.menu_settings:Slider("Take before min", 0, 99, 0)
-	self.lotus_catcher_auto:Icon("")
+	self.lotus_catcher_auto:Icon("\u{e3d6}")
 	self.lotus_catcher_auto:ToolTip("Set 0 for always")
 
 	self.enable:SetCallback(function(widget)
