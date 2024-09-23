@@ -3,14 +3,14 @@ require("xlib/__init__")
 local IPos = {}
 
 function IPos:Init()
-	self.menu = Menu.Create("Info Screen", "xScripts", "IPos")
-	self.menu:Icon("")
+	self.menu = Menu.Create("Info Screen", "Main", "Info Overlay")
 
-	self.menu_main = self.menu:Create("Main")
+	self.menu_main = self.menu:Create("xScripts")
+	self.menu_main:Icon("\u{e12e}")
 
-	self.menu_settings = self.menu_main:Create("Settings")
+	self.menu_script = self.menu_main:Create("IPos")
 
-	self.enable = self.menu_settings:Switch("Enable", false)
+	self.enable = self.menu_script:Switch("Enable", false)
 	self.enable:Icon("\u{f5a0}")
 	self.enable:ToolTip("UPDATED AT: 04.05.24 (7.35d)")
 
@@ -21,6 +21,13 @@ function IPos:Init()
 	self.enable_fountain_positions:Icon("\u{f2a8}")
 	self.enable_wards = self.enable_gear:Switch("Wards", true)
 	self.enable_wards:Icon("\u{e4bf}")
+
+	self.enable:SetCallback(function(enable)
+		local enabled = enable:Get()
+		self.enable_roshan_positions:Disabled(not enabled)
+		self.enable_fountain_positions:Disabled(not enabled)
+		self.enable_wards:Disabled(not enabled)
+	end, true)
 
 	self.roshan_positions = {
 		-- top

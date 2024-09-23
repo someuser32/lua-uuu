@@ -4,6 +4,7 @@ local BaseScriptAPI = {
 	draw_tick = 0,
 	cache = {
 		inventory = {},
+		items = {},
 		visibility = {},
 		visibility_pre = {},
 		particles = {},
@@ -15,6 +16,10 @@ local BaseScriptAPI = {
 		dt_draw = GameRules.GetGameTime(),
 	},
 }
+
+---@alias particle_cp {position: Vector, attach_type: Enum.ParticleAttachment, entity?: userdata, entity_id: number, attachment_name: string, include_wearables: boolean}
+---@alias particle {name: string, shortname: string, attach_type: Enum.ParticleAttachment, entity?: userdata, entity_id: number, entity_for_modifiers?: userdata, entity_for_modifiers_id: number, name_index: number, hash: number, control_points: {number: particle_cp}, created_at: number, fired_callback: boolean}
+---@alias lost_item_info {name: string}
 
 function BaseScriptAPI:Init()
 	Event.AddListener("entity_hurt")
@@ -64,6 +69,7 @@ function BaseScriptAPI:SendCustomCallback(callback_name, callback_args)
 end
 
 function BaseScriptAPI:CanSendCustomCallbackToUScript(uscript, name)
+	if uscript.instance[name] == nil then return false end
 	if type(uscript.instance[name.."Enabled"]) == "function" then
 		if uscript.instance[name.."Enabled"](uscript.instance) then
 			return true
@@ -72,8 +78,6 @@ function BaseScriptAPI:CanSendCustomCallbackToUScript(uscript, name)
 		if uscript.instance["IsCallbackEnabled"](uscript.instance, name) then
 			return true
 		end
-	else
-		return true
 	end
 	return false
 end
@@ -185,6 +189,7 @@ function BaseScriptAPI:OnUpdate()
 		local heroListeners = {
 			"OnHeroUsedAbility", "OnHeroUsedAbilityEnemy", "OnHeroUsedAbilityAlly",
 			"OnHeroPhaseAbility", "OnHeroPhaseAbilityEnemy", "OnHeroPhaseAbilityAlly",
+			"OnHeroLostItem", "OnHeroLostItemEnemy", "OnHeroLostItemAlly",
 			"HeroVisibility", "HeroVisibilityEnemy", "HeroVisibilityAlly",
 		}
 		local NPCListeners = {
@@ -198,7 +203,7 @@ function BaseScriptAPI:OnUpdate()
 		if tick % (2*3) == 0 or tick % (2*5) == 0 then
 			if searchFlags ~= nil then
 				for _, npc in pairs(NPCs.GetAll(searchFlags)) do
-					if not NPC.IsIllusion(npc) then
+					if not NPC.xIsIllusion(npc) then
 						local entindex = Entity.GetIndex(npc)
 						local is_ally = Entity.GetTeamNum(npc) == localTeam
 						local is_hero = NPC.IsHero(npc)
@@ -225,14 +230,14 @@ function BaseScriptAPI:OnUpdate()
 									"OnNPCPhaseAbility",
 									is_ally and "OnNPCPhaseAbilityAlly" or "OnNPCPhaseAbilityEnemy",
 								}
-
+								local items = nil
 								if table.contains(active_listeners, table.unpack(table.combine(use_listeners, phase_listeners))) then
-									local use_listeners_active = table.contains(active_listeners, use_listeners)
-									local items = is_hero and NPC.GetInventory(npc) or {}
+									local use_listeners_active = table.contains(active_listeners, table.unpack(use_listeners))
+									items = is_hero and NPC.GetInventory(npc) or {}
 									local abilities = is_hero and (table.combine(table.values(NPC.GetAbilities(npc)), table.values(items))) or table.values(NPC.GetAbilities(npc))
 									for _, ability in pairs(abilities) do
 										if (Ability.IsItem(ability) or (not Ability.IsAttributes(ability) and Ability.GetLevel(ability) > 0 and not Ability.IsHidden(ability))) and not Ability.IsPassive(ability) then
-											if table.contains(active_listeners, table.unpack(use_listeners)) then
+											if use_listeners_active then
 												local last_used = Ability.IsUsed(ability)
 												if last_used then
 													if not table.contains(self.cache.cast, ability) then
@@ -260,24 +265,34 @@ function BaseScriptAPI:OnUpdate()
 											end
 										end
 									end
-									if is_hero and use_listeners_active then
-										if self.inventories_cache[entindex] ~= nil then
-											local ward_dispenser = NPC.GetItem(npc, "item_ward_dispenser")
-											for _, item in pairs(self.cache.inventory[entindex]) do
-												local slot = Item.GetSlot(item)
-												local container = Item.GetContainer(item)
-												if slot == nil and container == nil then
-													local item_name = Ability.GetName(item)
-													if not string.startswith(item_name, "item_ward") or ward_dispenser == nil then
-														for _, listener in pairs(use_listeners) do
-															self:SendCustomCallback(listener, {item})
-														end
+								end
+								local lose_listeners = is_hero and {
+									"OnHeroLostItem",
+									is_ally and "OnHeroLostItemAlly" or "OnHeroLostItemEnemy"
+								} or {}
+								if table.contains(active_listeners, table.unpack(lose_listeners)) then
+									items = items or NPC.GetInventory(npc)
+									if self.cache.inventory[entindex] ~= nil then
+										local ward_dispenser = NPC.GetItem(npc, "item_ward_dispenser")
+										for _, item in pairs(self.cache.inventory[entindex]) do
+											local status, slot = pcall(Item.GetSlot, item)
+											if not status then
+												slot = nil
+											else
+												self.cache.items[item] = self.cache.items[item] or {}
+												self.cache.items[item]["name"] = self.cache.items[item]["name"] or Ability.GetName(item)
+											end
+											local container = Item.GetContainer(item)
+											if slot == nil and container == nil then
+												if not string.startswith(self.cache.items[item]["name"], "item_ward") or ward_dispenser == nil then
+													for _, listener in pairs(lose_listeners) do
+														self:SendCustomCallback(listener, {item, npc, self.cache.items[item]})
 													end
 												end
 											end
 										end
-										self.inventories_cache[entindex] = items
 									end
+									self.cache.inventory[entindex] = items
 								end
 							end
 						end

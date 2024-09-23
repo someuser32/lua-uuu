@@ -86,6 +86,14 @@ function KVLib:GetHeroAttribute(name)
 end
 
 ---@param name string
+---@return boolean
+function KVLib:IsItemNeutral(name)
+	local kv = self:GetKV("items")["DOTAAbilities"][name]
+	if kv == nil then return false end
+	return tostring(kv["ItemIsNeutralDrop"]) == "1"
+end
+
+---@param name string
 ---@return string[]
 function KVLib:GetAbilitySpecialKeys(name)
 	local kv = not Ability.IsItemName(name) and self:GetKV("npc_abilities") or self:GetKV("items")

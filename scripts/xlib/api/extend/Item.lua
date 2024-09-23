@@ -43,3 +43,15 @@ function Item.GetContainer(item)
 		end
 	end
 end
+
+---@param name string
+---@return userdata?
+function Item.IsNeutralItemName(name)
+	return KVLib:IsItemNeutral(name)
+end
+
+---@param item userdata
+---@return userdata?
+function Item.IsNeutralItem(item)
+	return Item.IsNeutralItemName(Ability.GetName(item))
+end

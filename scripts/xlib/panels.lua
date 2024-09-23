@@ -23,14 +23,17 @@ function Panel.new(name, draw_callback, can_move_callback, default_position)
 	return panel
 end
 
+---@return Vec2
 function Panel:ApproximateSize()
 	return self.__size_cache
 end
 
+---@return boolean
 function Panel:CanMove()
 	return Input.IsKeyDown(Enum.ButtonCode.KEY_MOUSE1) and self.can_move_callback(self)
 end
 
+---@param position Vec2
 function Panel:Move(position)
 	self.position = position
 	Config.WriteInt("xlib_panels", self.name.."_x", math.floor(position.x))
@@ -39,12 +42,14 @@ function Panel:Move(position)
 	self.__is_moving_cache = false
 end
 
+---@param visible boolean
 function Panel:SetVisible(visible)
 	self.visible = visible
 	self.__is_moving = false
 	self.__is_moving_cache = false
 end
 
+---@return Vec2
 function Panel:Draw()
 	local size = self.draw_callback(self)
 	self.__size_cache = size
@@ -65,10 +70,15 @@ Panels = {
 	mouse_position_cache=Vec2(0,0),
 }
 
+---@param panel Panel
 function Panels:AddPanel(panel)
 	table.insert(self.panels, panel)
 end
 
+---@param panel Panel
+---@param screen_size Vec2
+---@param cursor_position Vec2
+---@param cursor_position_delta Vec2
 function Panels:DrawPanel(panel, screen_size, cursor_position, cursor_position_delta)
 	local size = panel:ApproximateSize()
 	if panel:CanMove() then

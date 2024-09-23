@@ -3,16 +3,10 @@ require("xlib/__init__")
 local ShowMeMoreDestinations = {}
 
 function ShowMeMoreDestinations:Init()
-	self.menu = Menu.Create("Info Screen", "Main", "Show Me More")
-
-	self.menu_main = self.menu:Find("Main")
-
-	self.menu_settings = self.menu_main:Find("Maphack")
-
 	self.enable = Menu.Find("Info Screen", "Main", "Show Me More", "Main", "Maphack", "Enable") --[[@as CMenuSwitch]]
 
 	self.menu_gear = Menu.Find("Info Screen", "Main", "Show Me More", "Main", "Maphack", "Ability Info", "Ability Info") --[[@as CMenuGearAttachment]]
-	self.show_destination = self.menu_gear:Switch("Show Spells Destination", false)
+	self.show_destination = self.menu_gear:Switch("Show Spells Destination (xScripts)", false)
 	self.show_destination:Icon("\u{e3d4}")
 
 	self.alerts_info = {

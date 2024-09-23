@@ -1,38 +1,38 @@
--- ---@param heroname string
--- ---@return string
--- function GetHeroIconPath(heroname)
--- 	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
--- 		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
--- 	end
--- 	return "panorama/images/heroes/icons/"..heroname.."_png.vtex_c"
--- end
+---@param heroname string
+---@return string
+function GetHeroIconPath(heroname)
+	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
+		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
+	end
+	return "panorama/images/heroes/icons/"..heroname.."_png.vtex_c"
+end
 
--- ---@param heroname string
--- ---@return string
--- function GetHeroTopbarIconPath(heroname)
--- 	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
--- 		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
--- 	end
--- 	return "panorama/images/heroes/"..heroname.."_png.vtex_c"
--- end
+---@param heroname string
+---@return string
+function GetHeroTopbarIconPath(heroname)
+	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
+		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
+	end
+	return "panorama/images/heroes/"..heroname.."_png.vtex_c"
+end
 
--- ---@param heroname string
--- ---@return string
--- function GetHeroTopbarIconPathRounded(heroname)
--- 	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
--- 		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
--- 	end
--- 	return "~/heroes_circle/"..string.sub(heroname, #"npc_dota_hero_"+1)..".png"
--- end
+---@param heroname string
+---@return string
+function GetHeroTopbarIconPathRounded(heroname)
+	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
+		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
+	end
+	return "~/heroes_circle/"..string.sub(heroname, #"npc_dota_hero_"+1)..".png"
+end
 
--- ---@param heroname string
--- ---@return string
--- function GetHeroSelectionIconPath(heroname)
--- 	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
--- 		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
--- 	end
--- 	return "panorama/images/heroes/selection/"..heroname.."_png.vtex_c"
--- end
+---@param heroname string
+---@return string
+function GetHeroSelectionIconPath(heroname)
+	if string.startswith(heroname, "npc_dota_lone_druid_bear") then
+		return "panorama/images/spellicons/lone_druid_spirit_bear_png.vtex_c"
+	end
+	return "panorama/images/heroes/selection/"..heroname.."_png.vtex_c"
+end
 
 ---@param v boolean
 ---@return number

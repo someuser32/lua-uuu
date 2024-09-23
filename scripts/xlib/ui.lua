@@ -79,7 +79,9 @@ function UILib:CreateAdditionalControllableUnits(parent, name, use_abilities, us
 			table.insert(unitsTable, {unit[1], unit[2], false})
 		end
 	end
-	return parent:MultiSelect(name or "Additional usage", unitsTable)
+	local option = parent:MultiSelect(name or "Include units", unitsTable, true)
+	option:Icon("\u{f509}")
+	return option
 end
 
 return UILib
