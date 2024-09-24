@@ -283,7 +283,7 @@ function BaseScriptAPI:OnUpdate()
 												self.cache.items[item]["name"] = self.cache.items[item]["name"] or Ability.GetName(item)
 											end
 											local container = Item.GetContainer(item)
-											if slot == nil and container == nil then
+											if slot == nil and container == nil and self.cache.items[item] ~= nil then
 												if not string.startswith(self.cache.items[item]["name"], "item_ward") or ward_dispenser == nil then
 													for _, listener in pairs(lose_listeners) do
 														self:SendCustomCallback(listener, {item, npc, self.cache.items[item]})
