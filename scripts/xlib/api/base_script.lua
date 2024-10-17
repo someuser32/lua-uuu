@@ -185,7 +185,7 @@ function BaseScriptAPI:OnUpdate()
 	local now = GameRules.GetGameTime()
 	local tick = Tick()
 	if tick % 2 == 0 then
-		local localTeam = Player.GetLocalTeam()
+		local localTeam = Players.GetLocalTeam()
 		local heroListeners = {
 			"OnHeroUsedAbility", "OnHeroUsedAbilityEnemy", "OnHeroUsedAbilityAlly",
 			"OnHeroPhaseAbility", "OnHeroPhaseAbilityEnemy", "OnHeroPhaseAbilityAlly",

@@ -1,4 +1,4 @@
 ---@return Enum.TeamNum
-function Player.GetLocalTeam()
+function Players.GetLocalTeam()
 	return Entity.GetTeamNum(Players.GetLocal())
 end

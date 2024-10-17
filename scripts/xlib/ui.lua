@@ -10,7 +10,7 @@ local UILib = {}
 function UILib:CreateMultiselectFromEnemies(parent, name, expanded, selectAll, useHeroNames)
 	local itemsTable = {}
 	if GameRules.GetGameState() >= 4 then
-		local localteam = Player.GetLocalTeam()
+		local localteam = Players.GetLocalTeam()
 		for playerID, hero in pairs(Heroes.GetAllPlayers()) do
 			if Entity.GetTeamNum(hero) ~= localteam then
 				local hero_name = NPC.GetUnitName(hero)
@@ -30,7 +30,7 @@ end
 function UILib:CreateMultiselectFromAllies(parent, name, expanded, selectAll, useHeroNames)
 	local itemsTable = {}
 	if GameRules.GetGameState() >= 4 then
-		local localteam = Player.GetLocalTeam()
+		local localteam = Players.GetLocalTeam()
 		for playerID, hero in pairs(Heroes.GetAllPlayers()) do
 			if Entity.GetTeamNum(hero) == localteam then
 				local hero_name = NPC.GetUnitName(hero)
@@ -50,7 +50,7 @@ function UILib:CreateMultiselectFromAlliesOnly(parent, name, expanded, selectAll
 	local itemsTable = {}
 	if GameRules.GetGameState() >= 4 then
 		local localplayerid = Player.GetPlayerID(Players.GetLocal())
-		local localteam = Player.GetLocalTeam()
+		local localteam = Players.GetLocalTeam()
 		for playerID, hero in pairs(Heroes.GetAllPlayers()) do
 			if Entity.GetTeamNum(hero) == localteam and playerID ~= localplayerid then
 				local hero_name = NPC.GetUnitName(hero)

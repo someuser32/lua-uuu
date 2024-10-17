@@ -245,7 +245,7 @@ end
 
 ---@param particle particle
 function TreeDestroyerExtended:OnParticle(particle)
-	local localteam = Player.GetLocalTeam()
+	local localteam = Players.GetLocalTeam()
 	if particle["entity"] ~= nil then
 		local ent = particle["entity"]
 		if Entity.GetTeamNum(ent) ~= localteam then

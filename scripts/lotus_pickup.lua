@@ -31,8 +31,6 @@ function LotusPickup:Init()
 	end
 
 	self.lotus_replenish_time = 3*60
-
-	self.listeners = {}
 end
 
 function LotusPickup:CatcherActive()

@@ -59,7 +59,7 @@ function ShowMeMoreDestinations:OnUpdate()
 	if not self.enable:Get() or not self.show_destination:Get() then return end
 	local tick = Tick()
 	if tick % 6 == 0 then
-		local localteam = Player.GetLocalTeam()
+		local localteam = Players.GetLocalTeam()
 		for _, hero in pairs(Heroes.GetAll()) do
 			if Entity.GetTeamNum(hero) ~= localteam then
 				local sharpshooter_modifier = NPC.GetModifier(hero, "modifier_hoodwink_sharpshooter_windup")
@@ -108,7 +108,7 @@ end
 function ShowMeMoreDestinations:OnParticle(particle)
 	local particle_info = self.particles_info[particle["name"]] or self.particles_info[particle["shortname"]]
 	if particle_info ~= nil then
-		local localteam = Player.GetLocalTeam()
+		local localteam = Players.GetLocalTeam()
 		local owner = particle["entity_for_modifiers"]
 		if owner == nil then
 			for _, enemy in pairs(Heroes.GetAll()) do
@@ -160,7 +160,7 @@ function ShowMeMoreDestinations:OnEntityCreate(entity)
 	if Entity.IsNPC(entity) then
 		Timers:CreateTimer(0.01, function()
 			if not Entity.IsEntity(entity) then return nil end
-			if Entity.GetTeamNum(entity) == Player.GetLocalTeam() then return end
+			if Entity.GetTeamNum(entity) == Players.GetLocalTeam() then return end
 			if NPC.GetUnitName(entity) == "npc_dota_techies_remote_mine" then
 				local old_pos = Entity.GetAbsOrigin(entity)
 				local old_time = GameRules.GetGameTime()
