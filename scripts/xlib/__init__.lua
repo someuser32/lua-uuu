@@ -59,6 +59,9 @@ AntiOverwatch = require("xlib/api/anti_overwatch")
 ---@type Notifications
 Notifications = require("xlib/api/notifications")
 
+---@type RadiusManager
+RadiusManager = require("xlib/api/radius_manager")
+
 require("xlib/panels")
 
 -- Extend Umbrella API (postinit)

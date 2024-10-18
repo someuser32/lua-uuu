@@ -13,9 +13,18 @@ local SpellReflect = {
 
 ---@param parent CMenuGroup | CMenuGearAttachment
 ---@param gear? boolean
+---@param return_parent? boolean
 ---@return table
-function SpellReflect:CreateUI(parent, gear)
+function SpellReflect:CreateUI(parent, gear, return_parent)
 	local modules = {}
+	local spell_reflect = parent
+	local returned_parent = spell_reflect
+	if gear then
+		local label = parent:Label("Spell Reflect")
+		label:Icon("\u{f13a}")
+		spell_reflect = label:Gear("Settings")
+		returned_parent = label
+	end
 	local usage_option = parent:Combo("Mode", self.usage_options, 2)
 	usage_option:ToolTip("[Don't use] - don't use abilities\n[Ignore] - use always\n[Safe] - use only if caster absorbs spells or is bkb protected from ability\n[Safest] - use only if caster is bkb protected from ability")
 	table.insert(modules, usage_option)
@@ -25,6 +34,9 @@ function SpellReflect:CreateUI(parent, gear)
 	local bkb_usage_option = parent:MultiSelect("Auto BKB for safe use", table.values(table.map(Ability.GetBKBs(true), function(_, bkb) return {bkb, Ability.GetAbilityNameIconPath(bkb), false} end)), false)
 	bkb_usage_option:ToolTip("Only works on Safe and Safest modes, turn all off to disable auto bkb usage")
 	table.insert(modules, bkb_usage_option)
+	if return_parent then
+		table.insert(modules, returned_parent)
+	end
 	return modules
 end
 

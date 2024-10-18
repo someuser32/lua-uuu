@@ -14,14 +14,17 @@ local Notifications = {
 ---@param gear? boolean
 ---@param text? boolean
 ---@param sound? boolean
+---@param return_parent? boolean
 ---@return table
-function Notifications:CreateUI(parent, gear, text, sound)
+function Notifications:CreateUI(parent, gear, text, sound, return_parent)
 	local modules = {}
 	local notifications = parent
+	local returned_parent = radiuses
 	if gear then
 		local label = parent:Label("Notifications")
 		label:Icon("\u{f0f3}")
 		notifications = label:Gear("Notifications")
+		returned_parent = label
 	end
 	if text then
 		local text_notification = notifications:Switch("Text", false)
@@ -32,6 +35,9 @@ function Notifications:CreateUI(parent, gear, text, sound)
 		local sound_notification = notifications:Combo("Sound", table.map(self.sounds, function(_, sound) return sound[1] end), 0)
 		sound_notification:Icon("\u{f001}")
 		table.insert(modules, sound_notification)
+	end
+	if return_parent then
+		table.insert(modules, returned_parent)
 	end
 	return modules
 end

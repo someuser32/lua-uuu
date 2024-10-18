@@ -12,14 +12,17 @@ local Conditions = {
 ---@param gear? boolean
 ---@param invis? boolean
 ---@param channelings? boolean
+---@param return_parent? boolean
 ---@return table
-function Conditions:CreateUI(parent, gear, invis, channelings)
+function Conditions:CreateUI(parent, gear, invis, channelings, return_parent)
 	local modules = {}
 	local conditions = parent
+	local returned_parent = conditions
 	if gear then
 		local label = parent:Label("Conditions")
 		label:Icon("\u{e47a}")
 		conditions = label:Gear("Conditions")
+		returned_parent = label
 	end
 	if invis then
 		local invisibility = conditions:Combo("Invisibility", self.invis_options, 1)
@@ -30,6 +33,9 @@ function Conditions:CreateUI(parent, gear, invis, channelings)
 		local channeling = conditions:Switch("Interrupt channelings", false)
 		channeling:Icon("\u{f6b8}")
 		table.insert(modules, channeling)
+	end
+	if return_parent then
+		table.insert(modules, returned_parent)
 	end
 	return modules
 end

@@ -32,12 +32,35 @@ function DuelistRadar:Init()
 	self.show_on = self.menu_script:MultiCombo("Show On", {"Local hero", "Allies"}, {"Local hero"})
 	self.show_on:Icon("\u{e533}")
 
+	self.draw_radius_on_visible_on = self.menu_script:MultiCombo("Show Visible Radius On", {"Local hero", "Allies"}, {"Local hero"})
+	self.draw_radius_on_visible_on:Icon("\u{e533}")
+
+	self.radius_type, self.radius_color, self.radiuses = table.unpack(RadiusManager:CreateUI(self.menu_script, true, true, true, true))
+
 	self.enable:SetCallback(function(widget)
 		local enabled = widget:Get()
-		self.icon_settings:Disabled(not enabled)
+		icon_label:Disabled(not enabled)
+		self.show_on:Disabled(not enabled)
+		self.draw_radius_on_visible_on:Disabled(not enabled)
+		self.radiuses:Disabled(not enabled)
 	end, true)
 
+	self.radius_type:SetCallback(function(widget)
+		local _type = widget:Get()+1
+		for _, particle in pairs(self.particles) do
+			self.particles[_] = RadiusManager:ChangeType(particle, _type)
+		end
+	end)
+
+	self.radius_color:SetCallback(function(widget)
+		local color = widget:Get()
+		for _, particle in pairs(self.particles) do
+			self.particles[_] = RadiusManager:ChangeColor(particle, color)
+		end
+	end)
+
 	self.triggered_units = {}
+	self.particles = {}
 end
 
 function DuelistRadar:OnDraw()
@@ -62,17 +85,31 @@ function DuelistRadar:OnUpdate()
 		local localteam = Players.GetLocalTeam()
 		for _, hero in pairs(Heroes.GetAll()) do
 			if Entity.GetTeamNum(hero) == localteam then
+				local trigger = false
 				local is_local = Entity.RecursiveGetOwner(hero) == localplayer
 				if (not is_local and self.show_on:Get("Allies")) or (is_local and self.show_on:Get("Local hero")) then
 					local modifier = NPC.GetModifier(hero, "modifier_item_duelist_gloves")
 					if modifier then
-						local has_enemy = Modifier.GetField(modifier, "actual_attack_speed", true) > 0
-						self.triggered_units[hero] = has_enemy or nil
-					elseif self.triggered_units[hero] then
-						self.triggered_units[hero] = nil
+						if Modifier.GetField(modifier, "actual_attack_speed", true) > 0 then
+							trigger = true
+						end
 					end
-				elseif self.triggered_units[hero] then
+				end
+				if trigger then
+					self.triggered_units[hero] = true
+					local can_trigger = (not is_local and self.draw_radius_on_visible_on:Get("Allies")) or (is_local and self.draw_radius_on_visible_on:Get("Local hero"))
+					if self.particles[hero] == nil and can_trigger then
+						self.particles[hero] = RadiusManager:DrawParticle(self.radius_type:Get()+1, self.radius_color:Get(), 1200, hero)
+					elseif self.particles[hero] ~= nil and not can_trigger then
+						Particle.Destroy(self.particles[hero])
+						self.particles[hero] = nil
+					end
+				else
 					self.triggered_units[hero] = nil
+					if self.particles[hero] ~= nil then
+						Particle.Destroy(self.particles[hero])
+						self.particles[hero] = nil
+					end
 				end
 			end
 		end

@@ -30,7 +30,11 @@ end
 ---@return string
 function string.capitalize(str, every)
 	if every then
-		return string.sub(string.gsub(" "..str, "%W%l", string.upper), 2)
+		local s = ""
+		for _, st in pairs(string.split(str, " ")) do
+			s = s..string.capitalize(st).." "
+		end
+		return string.sub(s, 1, #s-1)
 	end
-    return (string.gsub(str, "^%l", string.upper))
+    return string.upper(string.sub(str, 1, 1))..string.lower(string.sub(str, 2))
 end

@@ -25,10 +25,18 @@ local LinkenBreaker = {
 ---@param additional_abilities? string[]
 ---@param exclude_projectiles? boolean
 ---@param exclude_abilities? string[]
+---@param return_parent? boolean
 ---@return table
-function LinkenBreaker:CreateUI(parent, gear, additional_abilities, exclude_projectiles, exclude_abilities)
+function LinkenBreaker:CreateUI(parent, gear, additional_abilities, exclude_projectiles, exclude_abilities, return_parent)
 	local modules = {}
-	local linken_breaker = gear and parent:Label("Linken Breaker"):Gear("Linken Breaker") or parent
+	local linken_breaker = parent
+	local returned_parent = linken_breaker
+	if gear then
+		local label = parent:Label("Linken Breaker")
+		label:Icon("\u{f13a}")
+		linken_breaker = label:Gear("Linken Breaker")
+		returned_parent = label
+	end
 	local abilities = {}
 	for ability_name, is_projectile in pairs(self.abilities) do
 		if (not exclude_projectiles or not is_projectile) and not table.contains(exclude_abilities, ability_name) then
@@ -40,6 +48,9 @@ function LinkenBreaker:CreateUI(parent, gear, additional_abilities, exclude_proj
 	end
 	local abilities_to_break = linken_breaker:MultiSelect("Abilities to break", abilities, false)
 	table.insert(modules, abilities_to_break)
+	if return_parent then
+		table.insert(modules, returned_parent)
+	end
 	return modules
 end
 

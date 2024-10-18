@@ -19,14 +19,17 @@ Enum.AntiOverwatchCameraOption = {
 ---@param parent CMenuGroup | CMenuGearAttachment
 ---@param gear? boolean
 ---@param camera? Enum.AntiOverwatchCameraOption
+---@param return_parent? boolean
 ---@return table
-function AntiOverwatch:CreateUI(parent, gear, camera)
+function AntiOverwatch:CreateUI(parent, gear, camera, return_parent)
 	local modules = {}
 	local anti_overwatch = parent
+	local returned_parent = anti_overwatch
 	if gear then
 		local label = parent:Label("Anti Overwatch")
 		label:Icon("\u{e333}")
 		anti_overwatch = label:Gear("Anti Overwatch")
+		returned_parent = label
 	end
 	if camera then
 		if camera == Enum.AntiOverwatchCameraOption.ADVANCED then
@@ -39,6 +42,9 @@ function AntiOverwatch:CreateUI(parent, gear, camera)
 			camera:Icon("\u{e0da}")
 			table.insert(modules, camera)
 		end
+	end
+	if return_parent then
+		table.insert(modules, returned_parent)
 	end
 	return modules
 end

@@ -1,5 +1,6 @@
 todos.txt
 1_test.lua
+casino.lua
 
 # Compiled Lua sources
 luac.out
