@@ -219,12 +219,17 @@ function TreeDestroyerExtended:OnUpdate()
 						end
 
 						local end_pos = World.GetGroundPosition(start_position + Entity.GetRotation(ent):GetForward() * (self:GetTreeDanceSpeed(ent)*max_duration))
-						local best_trees = table.combine(Trees.InRadius(end_pos, 500, true), TempTrees.InRadius(end_pos, 500))
+						local best_trees = table.filter(table.combine(Trees.InRadius(end_pos, 500, true), TempTrees.InRadius(end_pos, 500)), function(_, tree)
+							local angle = NPC.FindRotationAngle(ent, Entity.GetAbsOrigin(tree))
+							return angle < 0.2
+						end)
 						table.sort(best_trees, function(a, b)
 							local tree_a_pos = Entity.GetAbsOrigin(a)
 							local tree_b_pos = Entity.GetAbsOrigin(b)
-							local points_a = (end_pos - tree_a_pos):Length2D() * NPC.FindRotationAngle(ent, tree_a_pos)
-							local points_b = (end_pos - tree_b_pos):Length2D() * NPC.FindRotationAngle(ent, tree_b_pos)
+							local angle_a = NPC.FindRotationAngle(ent, tree_a_pos)
+							local angle_b = NPC.FindRotationAngle(ent, tree_b_pos)
+							local points_a = (end_pos - tree_a_pos):Length2D() * angle_a
+							local points_b = (end_pos - tree_b_pos):Length2D() * angle_b
 							return points_a < points_b
 						end)
 						local tree = best_trees[1]
@@ -246,9 +251,8 @@ end
 ---@param particle particle
 function TreeDestroyerExtended:OnParticle(particle)
 	local localteam = Players.GetLocalTeam()
-	if particle["entity"] ~= nil then
-		local ent = particle["entity"]
-		if Entity.GetTeamNum(ent) ~= localteam then
+	if particle["entity"] ~= nil and Entity.IsEntity(particle["entity"]) then
+		if Entity.GetTeamNum(particle["entity"]) ~= localteam then
 			if particle["shortname"] == "monkey_king_jump_trail" then
 				if particle["control_points"][1] ~= nil then
 					if self.monkey_king_tree_dance_particles[particle["entity_id"]] == nil then
@@ -338,7 +342,6 @@ end
 ---@param caster userdata
 ---@param info lost_item_info
 function TreeDestroyerExtended:OnHeroLostItemEnemy(item, caster, info)
-	print(info["name"])
 	if info["name"] == "item_branches" then
 		local tree_type = "item_branches"
 		local now = GameRules.GetGameTime()
