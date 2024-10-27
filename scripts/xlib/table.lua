@@ -37,7 +37,7 @@ end
 ---@param el any
 ---@return integer
 function table.removeElement(t, el)
-	local pos = table.find(t, el)
+	local pos = table.findkey(t, el)
 	table.remove(t, pos)
 	return pos
 end
@@ -45,7 +45,7 @@ end
 ---@param t table
 ---@param e any
 ---@return any
-function table.find(t, e)
+function table.findkey(t, e)
 	for k,v in pairs(t) do
 		if v == e then
 			return k
@@ -56,7 +56,7 @@ end
 ---@param t table
 ---@param e any
 ---@return any
-function table.finddeep(t, e)
+function table.findkeydeep(t, e)
 	for k,v in pairs(t) do
 		if (type(v) ~= "table" or type(e) ~= "table") and v == e then
 			return k

@@ -1,0 +1,59 @@
+-- NOTE: there is still no api for this
+
+-- local protobuf = require("protobuf")
+
+-- require("xlib/__init__")
+
+-- local DisableHelp = {}
+
+-- function DisableHelp:Init()
+-- 	self.menu = Menu.Create("Miscellaneous", "In Game", "Disable Help")
+
+-- 	self.menu_main = self.menu:Create("xScripts")
+-- 	self.menu_main:Icon("\u{e12e}")
+
+-- 	self.menu_script = self.menu_main:Create("Disable Help")
+
+-- 	self.enable = self.menu_script:Switch("Enable", false)
+-- 	self.enable:Icon("\u{f00c}")
+
+-- 	self.toggle_help = self.menu_script:Bind("Toggle key", Enum.ButtonCode.KEY_NONE)
+-- 	self.toggle_help:Icon("\u{f03e}")
+
+-- 	self.enable:SetCallback(function(widget)
+-- 		local enabled = widget:Get()
+-- 		self.toggle_help:Disabled(not enabled)
+-- 	end, true)
+-- end
+
+-- function DisableHelp:OnUpdate()
+-- 	if self.toggle_help:IsPressed() then
+-- 		local localplayer = Players.GetLocal()
+-- 		local localteam = Entity.GetTeamNum(localplayer)
+-- 		for _, player in pairs(Players.GetAll()) do
+-- 			if player ~= localplayer and Entity.GetTeamNum(player) == localteam then
+-- 				NetChannel.SendNetMessage("CDOTAClientMsg_SetUnitShareFlag", JSON:encode({
+-- 					player_id=Player.GetPlayerID(player),
+-- 					flag=4,
+-- 					state=self.toggle_help:IsToggled(),
+-- 				}))
+-- 				print(Player.GetPlayerID(player))
+-- 			end
+-- 		end
+-- 		print('send', self.toggle_help:IsToggled())
+-- 	end
+-- end
+
+-- -- function DisableHelp:OnSendNetMessage(msg)
+-- -- 	if msg.message_id == 310 then
+-- -- 		local message = JSON:decode(protobuf.decodeToJSON("CDOTAClientMsg_SetUnitShareFlag", msg.buffer, msg.size))
+-- -- 		-- deeppsrint(message)
+-- -- 	end
+-- -- 	deepprint(msg)
+-- -- 	return true
+-- -- end
+
+-- function DisableHelp:OnDraw()
+-- end
+
+-- return BaseScript(DisableHelp)
