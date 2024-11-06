@@ -180,7 +180,7 @@ function IPos:OnDraw()
 		end
 	end
 	if self.enable_fountain_positions:Get() then
-		for _, position in pairs(self.roshan_positions) do
+		for _, position in pairs(self.fountain_positions) do
 			self:DrawPosition(position, Color(245, 245, 245, 255), nil, true)
 		end
 	end
