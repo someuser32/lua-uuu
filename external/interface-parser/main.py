@@ -192,14 +192,13 @@ for root, _, files in os.walk(declarations_path):
 				raise e
 
 
-
-interfaces_file = []
-
-for interface_name, interface in interfaces.items():
-	content = f"""declare interface {interface["name"]} """ + "{"
+def dump_interface(prefix: str, interface_name: str, interface: dict, depth: int=0) -> str:
+	indent = "\t" * depth
+	pre_indent = "\t" * (depth - 1)
+	content = prefix
 
 	if "description" in interface:
-		content = f"/**\n *\t{interface["description"].replace("\n", "\n\t* ")}\n */\n{content}"
+		content = pre_indent + f"/**\n * {interface["description"].replace("\n", f"\n{pre_indent}* ")}\n */\n{content}"
 
 	for function in interface["functions"]:
 		description = function.get("description", "")
@@ -208,20 +207,20 @@ for interface_name, interface in interfaces.items():
 		desc = ""
 		if "arg_values" in function:
 			for arg, arg_value in function["arg_values"].items():
-				desc += f"\n@param {arg} {arg_value["description"]}"
+				desc += pre_indent + f"@param {arg} {arg_value["description"]}\n"
 				args[re.search(r"(\w+\d*)", arg).group()] = arg_value["type"]
 
-		desc += f"\n@returns {function["returns"]["type"]}{" " + function["returns"]["description"] if "description" in function["returns"] else ""}"
+		desc += pre_indent + f"@returns {function["returns"]["type"]}{" " + function["returns"]["description"] if "description" in function["returns"] else ""}"
 		description = f"{desc}{description}"
 
 		if "deprecated" in function and function["deprecated"]:
 			if len(description) > 0:
 				description += "\n"
 
-			description += "@deprecated"
+			description += pre_indent + "@deprecated"
 
 		if len(description) > 0:
-			content += f"\n\t/**\n\t *\t {description.replace('\n', '\n\t * ')}\n\t */"
+			content += f"\n{indent}/**\n{indent} * {description.replace("\n", f"\n{indent} * ")}\n{indent} */"
 
 		arguments = []
 		for arg in function["args"]:
@@ -230,14 +229,33 @@ for interface_name, interface in interfaces.items():
 				arg_type = "any"
 			arguments.append(f"{arg}: {arg_type}")
 
-		content += f"""\n\t{function["name"]}({', '.join(arguments)}): {function["returns"]["type"]};"""
+		if depth == 0:
+			content += pre_indent + f"""\n{indent}declare function {function["name"]}({', '.join(arguments)}): {function["returns"]["type"]};\n"""
+			continue
 
-	content += "\n}"
+		content += pre_indent + f"""\n{indent}{function["name"]}({', '.join(arguments)}): {function["returns"]["type"]};"""
+
+	return content
+
+
+interfaces_file = []
+
+for interface_name, interface in interfaces.items():
+	if interface_name == "_G":
+		content = dump_interface("", interface_name, interface)
+		interfaces_file.append(content+"\n")
+		print(interface)
+		continue
+
+	content = dump_interface(f"""declare interface {interface["name"]} """ + "{", interface_name, interface, 1) + "\n}"
 
 	interfaces_file.append(content+"\n")
 
 
 for interface_name, interface in interfaces.items():
+	if interface_name == "_G":
+		continue
+
 	content = f"""declare var {interface_name}: {interface["name"]};"""
 
 	interfaces_file.append(content+"\n")
@@ -248,31 +266,3 @@ with open("interfaces.d.ts", "w") as f:
 
 
 classes_file = []
-
-for class_name, class_info in classes.items():
-	content = f"""declare class {class_info["name"]} """ + "{"
-
-	if "description" in class_info:
-		content = f"/**\n *\t{class_info["description"].replace("\n", "\n\t* ")}\n */\n{content}"
-
-	for function in class_info["methods"]:
-		description = function.get("description", "")
-
-		if "deprecated" in function and function["deprecated"]:
-			if len(description) > 0:
-				description += "\n"
-
-			description += "@deprecated"
-
-		if len(description) > 0:
-			content += f"\n\t/**\n\t *\t {description.replace('\n', '\n\t * ')}\n\t */"
-
-		content += f"""\n\t{function["name"]}({', '.join(function["args"])}): {function["returns"]["type"]};"""
-
-	content += "\n}"
-
-	classes_file.append(content+"\n")
-
-
-with open("classes.d.ts", "w") as f:
-	f.write("\n".join(classes_file))
