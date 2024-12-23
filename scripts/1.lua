@@ -24,4 +24,10 @@
 -- 	sound = "sounds/ui/yoink"
 --   }))
 
+-- print(Engine.RunScript("$.DispatchEvent('DOTAReconnectClicked', $.GetContextPanel().FindChildTraverse('ReconnectButton'));"))
+
+-- print(Engine.RunScript("$.Msg(Entities.GetAbsOrigin(Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer())));"))
+
+-- print(Menu.Style())
+
 return {}

@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "interface-parser"
+version = "0.1.0"
+description = ""
+authors = ["someuser32 <102308925+someuser32@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.13"
+luaparser = "^3.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
