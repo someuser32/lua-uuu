@@ -28,7 +28,7 @@ enums = {}
 interfaces = {"_G": {"name": "_G", "functions": []}}
 
 def parse_function_args(args: str) -> dict[str, Any] | None:
-	match = re.search(r"(.+)\((.+?\)):(.+)", args)
+	match = re.search(r"(.+)\((.+\)):(.+)", args)
 	if not match:
 		return None
 
@@ -42,8 +42,9 @@ def parse_function_args(args: str) -> dict[str, Any] | None:
 
 	for arg in info[1].split(", "):
 		arg_info = arg.split(": ")
-		if len(arg_info) == 2:
-			args["args"][arg_info[0]] = {"type": arg_info[1]}
+		if len(arg_info) > 1:
+			print(arg_info)
+			args["args"][": ".join(arg_info[:-1])] = {"type": arg_info[-1]}
 		elif len(arg_info) == 1:
 			if "other" in args["args"]:
 				print("multiple other args", args)
@@ -84,11 +85,16 @@ def parse_comments(comments: luaparser.ast.Comments) -> dict[str, Any] | None:
 		elif comment.s.startswith("---@param"):
 			if "params" not in info:
 				info["params"] = {}
-			param_info = comment.s[10:].split(" ")
-			param_name, param_type, param_description = param_info[0], param_info[1], " ".join(param_info[2:]) if len(param_info) > 2 else ""
-			info["params"][param_name] = {"type": param_type, "description": param_description}
+			param_info = re.search(r"(\w+)\??\s+([\w<>:.,\[\]\s]+?)(?:\s*@default:\s+(.*?))?\s+(.*)", comment.s[10:])
+			if param_info is None:
+				continue
+			param_info = param_info.groups()
+			param_name, param_type, param_default, param_description = param_info[0], param_info[1], param_info[2] if len(param_info) > 2 else None, param_info[3] if len(param_info) > 3 else ""
+			info["params"][param_name] = {"type": param_type, "default": param_default, "description": param_description}
 		elif comment.s == "---@deprecated":
 			info["deprecated"] = True
+		elif comment.s.startswith("---@overload"):
+			continue
 		else:
 			print("unknown comment", comment.s)
 
@@ -200,15 +206,18 @@ def dump_interface(prefix: str, interface_name: str, interface: dict, depth: int
 	if "description" in interface:
 		content = pre_indent + f"/**\n * {interface["description"].replace("\n", f"\n{pre_indent}* ")}\n */\n{content}"
 
-	for function in interface["functions"]:
+	for function in interface.get("functions", interface.get("methods", [])):
 		description = function.get("description", "")
 
 		args = {}
 		desc = ""
 		if "arg_values" in function:
 			for arg, arg_value in function["arg_values"].items():
-				desc += pre_indent + f"@param {arg} {arg_value["description"]}\n"
-				args[re.search(r"(\w+\d*)", arg).group()] = arg_value["type"]
+				desc += pre_indent + f"@param {arg}"
+				if arg_value["default"] is not None:
+					desc += f" @default {arg_value["default"]}"
+				desc += f" {arg_value["description"]}\n"
+				args[arg] = arg_value["type"]
 
 		desc += pre_indent + f"@returns {function["returns"]["type"]}{" " + function["returns"]["description"] if "description" in function["returns"] else ""}"
 		description = f"{desc}{description}"
@@ -244,7 +253,6 @@ for interface_name, interface in interfaces.items():
 	if interface_name == "_G":
 		content = dump_interface("", interface_name, interface)
 		interfaces_file.append(content+"\n")
-		print(interface)
 		continue
 
 	content = dump_interface(f"""declare interface {interface["name"]} """ + "{", interface_name, interface, 1) + "\n}"
@@ -263,6 +271,16 @@ for interface_name, interface in interfaces.items():
 
 with open("interfaces.d.ts", "w") as f:
 	f.write("\n".join(interfaces_file))
+
+classes_file = []
+
+for class_name, class_info in classes.items():
+	content = dump_interface(f"""declare interface {class_info["name"]} """ + "{", class_name, class_info, 1) + "\n}"
+
+	classes_file.append(content+"\n")
+
+with open("classes.d.ts", "w") as f:
+	f.write("\n".join(classes_file))
 
 
 classes_file = []
