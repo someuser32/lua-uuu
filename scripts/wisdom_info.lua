@@ -297,21 +297,6 @@ function WisdomInfo:OnParticleDestroy(particle)
 	end
 end
 
----@param entity userdata
----@param modifier userdata
-function WisdomInfo:OnModifierCreate(entity, modifier)
-	if Modifier.GetName(modifier) == "modifier_xp_fountain_aura" then
-		local origin = Entity.GetAbsOrigin(entity)
-
-		for shrine, info in pairs(self.wisdom_shrines) do
-			if (origin - info.origin):Length2D() < 5 then
-				self.wisdom_shrines[shrine].has = true
-				self:UpdateWisdomShrine(shrine, true)
-			end
-		end
-	end
-end
-
 local script = {}
 
 setmetatable(script, {
