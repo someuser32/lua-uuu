@@ -220,13 +220,11 @@ def dump_interface(prefix: str, interface_name: str, interface: dict, depth: int
 				args[arg] = arg_value["type"]
 
 		desc += pre_indent + f"@returns {function["returns"]["type"]}{" " + function["returns"]["description"] if "description" in function["returns"] else ""}"
-		description = f"{desc}{description}"
 
 		if "deprecated" in function and function["deprecated"]:
-			if len(description) > 0:
-				description += "\n"
+			desc = f"{pre_indent}@deprecated\n{desc}"
 
-			description += pre_indent + "@deprecated"
+		description = f"{desc}{description}"
 
 		if len(description) > 0:
 			content += f"\n{indent}/**\n{indent} * {description.replace("\n", f"\n{indent} * ")}\n{indent} */"
