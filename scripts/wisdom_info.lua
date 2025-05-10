@@ -1,5 +1,5 @@
 ---@class WisdomInfo
----@field wisdom_shrines {origin: Vector, has: boolean, fx: number?}[]
+---@field wisdom_shrines table<userdata, {origin: Vector, has: boolean, fx: number?}>
 ---@field particle_indexes table<number, {entity: userdata, current: number, max: number}>
 local WisdomInfo = {
 	wisdom_initial = 7*60,
@@ -92,6 +92,7 @@ function WisdomInfo:Init()
 	end
 end
 
+---@param shrine userdata
 function WisdomInfo:OnWisdomCapturing(shrine)
 	if self.enable_notifications:Get() then
 		local localHero = Heroes.GetLocal()
@@ -130,6 +131,7 @@ function WisdomInfo:OnWisdomCapturing(shrine)
 	end
 end
 
+---@param shrine userdata
 function WisdomInfo:OnWisdomCaptured(shrine)
 	if self.enable_notifications:Get() then
 		local localHero = Heroes.GetLocal()
@@ -186,16 +188,26 @@ function WisdomInfo:OnUpdate()
 		end
 	end
 
-	if now > 0 and now - self.last_cache_update > 5 then
+	if now > 0 and now - self.last_cache_update > 10 then
 		Config.WriteInt("xwisdom_info_cache", "last_update", math.floor(now))
 		self.last_cache_update = now
 	end
 end
 
+---@param shrine userdata
+---@return string
 function WisdomInfo:GetShrineSide(shrine)
-	return self.wisdom_shrines[shrine].origin.x > 0 and "Right" or "Left"
+	return self:GetShrineSideByOrigin(self.wisdom_shrines[shrine].origin)
 end
 
+---@param origin Vector
+---@return string
+function WisdomInfo:GetShrineSideByOrigin(origin)
+	return origin.x > 0 and "Right" or "Left"
+end
+
+---@param shrine userdata
+---@param has boolean
 function WisdomInfo:UpdateWisdomShrine(shrine, has)
 	local now = GameRules.GetGameTime()
 
@@ -282,6 +294,21 @@ function WisdomInfo:OnParticleDestroy(particle)
 
 		self.wisdom_shrines[entity].fx = nil
 		self.particle_indexes[particle.index] = nil
+	end
+end
+
+---@param entity userdata
+---@param modifier userdata
+function WisdomInfo:OnModifierCreate(entity, modifier)
+	if Modifier.GetName(modifier) == "modifier_xp_fountain_aura" then
+		local origin = Entity.GetAbsOrigin(entity)
+
+		for shrine, info in pairs(self.wisdom_shrines) do
+			if (origin - info.origin):Length2D() < 5 then
+				self.wisdom_shrines[shrine].has = true
+				self:UpdateWisdomShrine(shrine, true)
+			end
+		end
 	end
 end
 
