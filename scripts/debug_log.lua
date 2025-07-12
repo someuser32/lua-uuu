@@ -111,23 +111,7 @@ function SaveDebugLog(filename)
 	return true
 end
 
-local tick = 0
-
 return {
-	OnUpdateEx = function()
-		if enable:Get() then
-			if tick % 30 == 0 then
-				local new_debug_filename = GetDebugLogName()
-				log_name:Name(new_debug_filename)
-			end
-
-			tick = tick + 1
-			if tick >= 100 then
-				tick = 0
-			end
-		end
-	end,
-
 	OnGameRulesStateChange = function(data)
 		if enable:Get() then
 			if auto_save_endgame:Get() then
