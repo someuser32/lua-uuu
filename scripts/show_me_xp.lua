@@ -86,8 +86,11 @@ function ShowMeXP:OnDraw()
 
 	local dt = 0.005
 
+	local bars_overlay = Menu.Find("Info Screen", "Main", "Heroes Overlay", "Main", "Bars Overlay", "Enable")
 	local draw_mana_bar_widget = Menu.Find("Info Screen", "Main", "Heroes Overlay", "Main", "Bars Overlay", "Draw Mana")
-	local draw_mana_bar = draw_mana_bar_widget ~= nil and draw_mana_bar_widget:Get()
+	local draw_mana_bar = bars_overlay ~= nil and draw_mana_bar_widget ~= nil and bars_overlay:Get() and draw_mana_bar_widget:Get()
+
+	local screen_size = Render.ScreenSize()
 
 	for hero, info in pairs(self.experiences) do
 		if info[3] then
@@ -97,11 +100,11 @@ function ShowMeXP:OnDraw()
 			local xy, visible = Render.WorldToScreen(hbo)
 
 			if visible then
-				xy.x = xy.x - 68
-				xy.y = xy.y - 19
+				xy.x = xy.x - (68 * (screen_size.x / 2560))
+				xy.y = xy.y - (19 * (screen_size.y / 1440))
 
 				if draw_mana_bar then
-					xy.y = xy.y + 7
+					xy.y = xy.y + (7 * (screen_size.y / 1440))
 				end
 
 				if info[4] < info[1] then
@@ -112,9 +115,12 @@ function ShowMeXP:OnDraw()
 					info[5] = nil
 				end
 
-				Render.Gradient(xy, xy + Vec2(134 * info[4], 7), self.xp_color_gradient_1:Get(), self.xp_color_gradient_2:Get(), self.xp_color_gradient_1:Get(), self.xp_color_gradient_2:Get())
-				Render.FilledRect(xy + Vec2(134, 7), xy, Color(0, 0, 0, 65))
-				Render.Rect(xy, xy + Vec2(134, 7), Color(0, 0, 0), 0, Enum.DrawFlags.None, 1)
+				local width = 134 * (screen_size.x / 2560)
+				local height = 7 * (screen_size.y / 1440)
+
+				Render.Gradient(xy, xy + Vec2(width * info[4], height), self.xp_color_gradient_1:Get(), self.xp_color_gradient_2:Get(), self.xp_color_gradient_1:Get(), self.xp_color_gradient_2:Get())
+				Render.FilledRect(xy + Vec2(width, height), xy, Color(0, 0, 0, 65))
+				Render.Rect(xy, xy + Vec2(width, height), Color(0, 0, 0), 0, Enum.DrawFlags.None, 1)
 			end
 		end
 	end
