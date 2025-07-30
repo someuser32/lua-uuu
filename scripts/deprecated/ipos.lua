@@ -143,7 +143,7 @@ function IPos:Init()
 			Vector(3003.78, -1528.9, 256),
 			Vector(3656.65, -1452.33, 256),
 			Vector(8724.8, -767.378, 256),
-		}
+		},
 	}
 
 	self.circle_radius = 10
