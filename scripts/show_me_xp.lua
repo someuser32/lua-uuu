@@ -68,7 +68,7 @@ function ShowMeXP:OnUpdate()
 					return v > xp
 				end) or #self.lvl_xp_table + 1) - 1
 
-				self.experiences[hero][1] = lvl < 30 and (xp - self.lvl_xp_table[lvl])/(self.lvl_xp_table[lvl+1] - self.lvl_xp_table[lvl])
+				self.experiences[hero][1] = lvl < 30 and (xp - self.lvl_xp_table[lvl])/(self.lvl_xp_table[lvl+1] - self.lvl_xp_table[lvl]) or 1
 				self.experiences[hero][2] = NPC.GetHealthBarOffset(hero)
 				self.experiences[hero][3] = visible
 			else
