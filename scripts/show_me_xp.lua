@@ -60,7 +60,8 @@ function ShowMeXP:OnUpdate()
 	for _, hero in pairs(Heroes.GetAll()) do
 		if Entity.GetTeamNum(hero) ~= local_team then
 			local visible = NPC.IsVisible(hero)
-			self.experiences[hero] = self.experiences[hero] or {0, 0, visible, 0}
+			local alive = Entity.IsAlive(hero)
+			self.experiences[hero] = self.experiences[hero] or {0, 0, visible and alive, 0}
 
 			if visible then
 				local xp = Hero.GetCurrentXP(hero)
@@ -70,9 +71,9 @@ function ShowMeXP:OnUpdate()
 
 				self.experiences[hero][1] = lvl < 30 and (xp - self.lvl_xp_table[lvl])/(self.lvl_xp_table[lvl+1] - self.lvl_xp_table[lvl]) or 1
 				self.experiences[hero][2] = NPC.GetHealthBarOffset(hero)
-				self.experiences[hero][3] = visible
+				self.experiences[hero][3] = visible and alive
 			else
-				self.experiences[hero][3] = visible
+				self.experiences[hero][3] = visible and alive
 			end
 		end
 	end
