@@ -10,6 +10,8 @@ local enable = menu_script:Switch("Enable", false, "\u{f00c}")
 
 local auto_save_endgame = menu_script:Switch("Auto Save After Match", false, "\u{f0c7}")
 
+local save_bind = menu_script:Bind("Save Bind", Enum.ButtonCode.KEY_NONE, "\u{e1c1}")
+
 local log_name = menu_script:Label("debug.log")
 
 local save = menu_script:Button("Save", function()
@@ -119,6 +121,12 @@ return {
 					SaveDebugLog()
 				end
 			end
+		end
+	end,
+
+	OnUpdate = function()
+		if save_bind:IsPressed() then
+			SaveDebugLog()
 		end
 	end,
 }
