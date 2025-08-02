@@ -62,7 +62,7 @@ function ShowMeXP:Init()
 
 		self.customization:Disabled(not enabled)
 		self.max_lvl:Disabled(not enabled)
-	end)
+	end, true)
 
 	self.experiences = {}
 end
@@ -76,7 +76,7 @@ function ShowMeXP:OnUpdate()
 	local local_team = Entity.GetTeamNum(local_player)
 
 	for _, hero in pairs(Heroes.GetAll()) do
-		if Entity.GetTeamNum(hero) ~= local_team and not NPC.IsIllusion(hero) and not NPC.HasModifier(hero, "modifier_arc_warden_tempest_double") and not NPC.HasModifier(hero, "modifier_vengefulspirit_command_aura_illusion") and not NPC.HasModifier(hero, "modifier_monkey_king_fur_army_soldier") then
+		if Entity.GetTeamNum(hero) ~= local_team and not NPC.IsIllusion(hero) and not NPC.HasModifier(hero, "modifier_arc_warden_tempest_double") and not NPC.HasModifier(hero, "modifier_vengefulspirit_command_aura_illusion") and not NPC.HasModifier(hero, "modifier_monkey_king_fur_army_soldier") and Entity.GetClassName(hero) ~= "C_DOTA_Unit_SpiritBear" then
 			local visible = NPC.IsVisible(hero)
 			local alive = Entity.IsAlive(hero)
 			self.experiences[hero] = self.experiences[hero] or {0, 0, 0, visible and alive, 0}
@@ -122,11 +122,11 @@ function ShowMeXP:OnDraw()
 			local xy, visible = Render.WorldToScreen(hbo)
 
 			if visible then
-				xy.x = xy.x - (68 * (screen_size.x / 2560))
+				xy.x = xy.x - (67.5 * (screen_size.x / 2560))
 				xy.y = xy.y - (19 * (screen_size.y / 1440))
 
 				if draw_mana_bar then
-					xy.y = xy.y + (7 * (screen_size.y / 1440))
+					xy.y = xy.y + (6.5 * (screen_size.y / 1440))
 				end
 
 				if info[5] < info[1] then
