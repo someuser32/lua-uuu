@@ -1,15 +1,13 @@
 local BetterUI = {
 	panorama_elements = {
 		{
-			name = "Center",
+			name = "Lower Hud",
 			icon = "\u{f84d}",
+			tooltip = "Also affects Quickbuy",
 			settings = {
 				"scale", "opacity",
 			},
-			panel_path = {
-				{"DotaHud", "Hud", "HUDElements", "lower_hud", "center_with_stats"},
-				{"DotaHud", "Hud", "HUDElements", "lower_hud", "BuffContainer"},
-			},
+			panel_path = {"DotaHud", "Hud", "HUDElements", "lower_hud"},
 		},
 		{
 			name = "Scoreboard",
@@ -49,7 +47,7 @@ local BetterUI = {
 		{
 			name = "Topbar",
 			icon = "\u{f855}",
-			tooltip = "Does not work properly with Info Screen",
+			tooltip = "Info Screen does not adjust properly",
 			settings = {
 				"scale", "opacity",
 			},
@@ -117,7 +115,6 @@ local BetterUI = {
 		{
 			name = "Minimap",
 			icon = "\u{f5a0}",
-			tooltip = "Toggle \"Use Extra Large Minimap\" to fix Scan Glyph Info",
 			settings = {
 				"scale", "opacity",
 			},
@@ -180,6 +177,8 @@ function BetterUI:Init()
 							panel:SetStyle(style)
 						end
 					end
+
+					self:FixUI()
 				end
 				self.settings[element["name"]]["settings"][setting]:SetCallback(self.settings[element["name"]]["settings"][setting.."_callback"], true)
 			elseif setting == "opacity" then
@@ -249,6 +248,32 @@ function BetterUI:Init()
 			end
 		end
 	end, true)
+end
+
+function BetterUI:FixUI()
+	if self.extra_large_minimap ~= nil then
+		return
+	end
+
+	local convar = ConVar.Find("dota_hud_extra_large_minimap")
+
+	if convar ~= nil then
+		self.extra_large_minimap = ConVar.GetInt(convar)
+
+		ConVar.SetInt(convar, self.extra_large_minimap == 1 and 0 or 1)
+	end
+end
+
+function BetterUI:OnUpdateEx()
+	if self.extra_large_minimap ~= nil then
+		local convar = ConVar.Find("dota_hud_extra_large_minimap")
+
+		if convar ~= nil then
+			ConVar.SetInt(convar, self.extra_large_minimap)
+
+			self.extra_large_minimap = nil
+		end
+	end
 end
 
 local script = {}
