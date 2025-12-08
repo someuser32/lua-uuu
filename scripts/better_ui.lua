@@ -276,32 +276,16 @@ function BetterUI:OnUpdateEx()
 	end
 end
 
-local script = {}
+function BetterUI:OnPreReload()
+	if self.extra_large_minimap ~= nil then
+		local convar = ConVar.Find("dota_hud_extra_large_minimap")
 
-setmetatable(script, {
-	__index = function(_, key)
-		local v = BetterUI[key]
+		if convar ~= nil then
+			ConVar.SetInt(convar, self.extra_large_minimap)
 
-		if type(v) == "function" then
-			return function(firstArg, ...)
-				if firstArg == script then
-					return v(BetterUI, ...)
-				else
-					return v(BetterUI, firstArg, ...)
-				end
-			end
-		else
-			return v
+			self.extra_large_minimap = nil
 		end
-	end,
-
-	__newindex = function(_, key, val)
-		BetterUI[key] = val
-	end,
-})
-
-if script.Init ~= nil then
-	script:Init()
+	end
 end
 
-return script
+return (XHelpers.WrapCallbacks or XHelpers.BaseScript)(BetterUI)

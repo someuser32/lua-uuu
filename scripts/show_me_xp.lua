@@ -72,11 +72,8 @@ function ShowMeXP:OnUpdate()
 		return
 	end
 
-	local local_player = Players.GetLocal()
-	local local_team = Entity.GetTeamNum(local_player)
-
-	for _, hero in pairs(Heroes.GetAll()) do
-		if Entity.GetTeamNum(hero) ~= local_team and not NPC.IsIllusion(hero) and not NPC.HasModifier(hero, "modifier_arc_warden_tempest_double") and not NPC.HasModifier(hero, "modifier_vengefulspirit_command_aura_illusion") and not NPC.HasModifier(hero, "modifier_monkey_king_fur_army_soldier") and Entity.GetClassName(hero) ~= "C_DOTA_Unit_SpiritBear" then
+	for _, hero in pairs(LIB_HEROES_DATA.enemies) do
+		if not NPC.IsIllusion(hero) and not NPC.IsTempestDouble(hero) and not XHelpers.XNPC:IsCommandAuraIllusion(hero) and not XHelpers.XNPC:IsMonkeyClone(hero) and not XHelpers.XNPC:IsSpiritBear(hero) then
 			local visible = NPC.IsVisible(hero)
 			local alive = Entity.IsAlive(hero)
 			self.experiences[hero] = self.experiences[hero] or {0, 0, 0, visible and alive, 0}
@@ -103,8 +100,6 @@ function ShowMeXP:OnDraw()
 		return
 	end
 
-	local dt = 0.005
-
 	local bars_overlay = Menu.Find("Info Screen", "Main", "Heroes Overlay", "Main", "Bars Overlay", "Enable")
 	local draw_mana_bar_widget = Menu.Find("Info Screen", "Main", "Heroes Overlay", "Main", "Bars Overlay", "Draw Mana")
 	local draw_mana_bar = bars_overlay ~= nil and draw_mana_bar_widget ~= nil and bars_overlay:Get() and draw_mana_bar_widget:Get()
@@ -129,11 +124,7 @@ function ShowMeXP:OnDraw()
 					xy.y = xy.y + (6.5 * (screen_size.y / 1440))
 				end
 
-				if info[5] < info[1] then
-					info[5] = math.min(info[5] + (info[1] - info[5]) * (1 - math.exp(-animation_speed * dt)), info[1])
-				elseif info[5] > info[1] then
-					info[5] = math.max(info[5] + (info[1] - info[5]) * (1 - math.exp(-animation_speed * dt)), info[1])
-				end
+				info[5] = XHelpers.xmath.exponential_progress(info[5], info[1], animation_speed, 0)
 
 				local width = 134 * (screen_size.x / 2560)
 				local height = self.bar_height:Get() * (screen_size.y / 1080)
@@ -146,32 +137,4 @@ function ShowMeXP:OnDraw()
 	end
 end
 
-local script = {}
-
-setmetatable(script, {
-	__index = function(_, key)
-		local v = ShowMeXP[key]
-
-		if type(v) == "function" then
-			return function(firstArg, ...)
-				if firstArg == script then
-					return v(ShowMeXP, ...)
-				else
-					return v(ShowMeXP, firstArg, ...)
-				end
-			end
-		else
-			return v
-		end
-	end,
-
-	__newindex = function(_, key, val)
-		ShowMeXP[key] = val
-	end,
-})
-
-if script.Init ~= nil then
-	script:Init()
-end
-
-return script
+return (XHelpers.WrapCallbacks or XHelpers.BaseScript)(ShowMeXP)
