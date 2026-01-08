@@ -1,4 +1,4 @@
-local CUSTOM_FILEPATH = "debugs/" -- WARNING: DO NOT EDIT IF YOU DO NOT KNOW WHAT ARE YOU DOING. Lua cannot create directories, so you must manually create EACH directory
+local CUSTOM_FILEPATH = "" -- WARNING: DO NOT EDIT IF YOU DO NOT KNOW WHAT ARE YOU DOING. Lua cannot create directories, so you must manually create EACH directory
 
 local menu = Menu.Create("General", "Debug", "Debug Log Helper")
 
@@ -106,7 +106,7 @@ function SaveDebugLog(filename)
 		new_debug_file:write(debug_content)
 		new_debug_file:close()
 	else
-		Log.Write("[debug_log.lua | Debug Log Helper] failed to copy debug!")
+		Log.Write("[debug_log.lua | Debug Log Helper] failed to copy debug! Filepath: " .. tostring(filename))
 		return false
 	end
 
