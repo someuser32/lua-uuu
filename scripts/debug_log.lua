@@ -1,4 +1,5 @@
--- create directory manually if you want to save in different location and do not forget to leave trailing slash
+-- create directory manually if you want to save in different location and do not forget to leave slash at the end
+-- необходимо создать папку вручную для сохранения в кастомной локации, не забудь оставить слэш (/) в конце строки
 local DIRECTORY = ""
 
 local GAME_STATE_NAMES = {
