@@ -51,4 +51,4 @@ function AutoHighFive:OnUpdate()
 	end
 end
 
-return (XHelpers.WrapCallbacks or XHelpers.BaseScript)(AutoHighFive)
+return XHelpers.WrapCallbacks(AutoHighFive)

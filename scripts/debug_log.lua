@@ -1,32 +1,6 @@
-local CUSTOM_FILEPATH = "" -- WARNING: DO NOT EDIT IF YOU DO NOT KNOW WHAT ARE YOU DOING. Lua cannot create directories, so you must manually create EACH directory
+local DIRECTORY = "debugs/"
 
-local menu = Menu.Create("General", "Debug", "Debug Log Helper")
-
-local menu_main = menu:Create("Main")
-
-local menu_script = menu_main:Create("Main", Enum.GroupSide.FullWidth)
-
-local enable = menu_script:Switch("Enable", false, "\u{f00c}")
-
-local auto_save_endgame = menu_script:Switch("Auto Save After Match", false, "\u{f0c7}")
-
-local save_bind = menu_script:Bind("Save Bind", Enum.ButtonCode.KEY_NONE, "\u{e1c1}")
-
-local log_name = menu_script:Label("debug.log")
-
-local save = menu_script:Button("Save", function()
-	SaveDebugLog()
-end)
-
-enable:SetCallback(function(widget)
-	local enabled = widget:Get()
-
-	auto_save_endgame:Disabled(not enabled)
-	log_name:Disabled(not enabled)
-	save:Disabled(not enabled)
-end, true)
-
-local state_to_text = {
+local GAME_STATE_NAMES = {
 	[Enum.GameState.DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD] = "pre draft",
 	[Enum.GameState.DOTA_GAMERULES_STATE_HERO_SELECTION] = "draft",
 	[Enum.GameState.DOTA_GAMERULES_STATE_STRATEGY_TIME] = "post draft",
@@ -40,93 +14,152 @@ local state_to_text = {
 }
 
 ---@return string
-function GetDebugLogName()
-	local name = "debug"
+local function get_filename()
+	local custom_name
 
-	local state = GameRules.GetGameState()
+	local game_state = GameRules.GetGameState()
 
-	if state > Enum.GameState.DOTA_GAMERULES_STATE_INIT then
-		local player = Players.GetLocal()
-		local player_team_data = Player.GetTeamData(player)
+	if game_state > Enum.GameState.DOTA_GAMERULES_STATE_INIT then
+		local local_player = Players.GetLocal()
+		local player_team_data = Entity.IsPlayer(local_player) and Player.GetTeamData(local_player) or nil
 
-		local hero_info = Engine.GetHeroNameByID(player_team_data.selected_hero_id)
-		if hero_info ~= nil then
-			local hero = Heroes.GetLocal()
-			if hero ~= nil then
-				hero_info = GameLocalizer.FindNPC(hero_info) .. " " .. tostring(player_team_data.selected_hero_variant & 0xFFFFFFFF) .. " lvl " .. tostring(NPC.GetCurrentLevel(hero))
+		local hero_name = player_team_data ~= nil and Engine.GetHeroNameByID(player_team_data.selected_hero_id) or nil
+
+		local hero_details
+
+		if hero_name ~= nil then
+			local hero_name_localized = GameLocalizer.FindNPC(hero_name)
+
+			local local_hero = Heroes.GetLocal()
+
+			if local_hero and Heroes.Contains(local_hero) then
+				hero_details = string.format("[%s lvl %d]", hero_name_localized, NPC.GetCurrentLevel(local_hero))
 			else
-				hero_info = GameLocalizer.FindNPC(hero_info)
+				hero_details = string.format("[%s]", hero_name_localized)
 			end
 		else
-			hero_info = "no hero"
+			hero_details = "[no hero]"
 		end
 
-		name = name .. " - [" .. hero_info .. "]"
+		local game_state_name = GAME_STATE_NAMES[game_state] or "?"
 
-		if state == Enum.GameState.DOTA_GAMERULES_STATE_PRE_GAME or state == Enum.GameState.DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
+		local game_state_details
+
+		if game_state == Enum.GameState.DOTA_GAMERULES_STATE_PRE_GAME or game_state == Enum.GameState.DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
 			local dota_time = math.abs(GameRules.GetDOTATime(false, true))
-			local dota_time_minutes = math.floor(dota_time / 60)
-			local dota_time_seconds = dota_time % 60 < 10 and "0" .. tostring(math.floor(dota_time % 60)) or tostring(math.floor(dota_time % 60))
-			local dota_time_formatted = tostring(dota_time_minutes) .. "." .. tostring(dota_time_seconds)
-			name = name .. " " .. (state_to_text[state] or "?") .. " " .. dota_time_formatted
+
+			game_state_details = string.format("%s %02d.%02d", game_state_name, math.floor(dota_time / 60), math.floor(dota_time % 60))
 		else
-			name = name .. " " .. (state_to_text[state] or "?")
+			game_state_details = string.format("%s %s", game_state_name, os.date("%y-%m-%d-%H-%M-%S"))
 		end
 
 		local match_id = GameRules.GetMatchID()
 
-		if match_id ~= 0 then
-			name = name .. " [" .. tostring(match_id) .. "]"
-		else
-			name = name .. " [" .. Engine.GetLevelNameShort() .. "]"
-		end
+		local match_details = match_id ~= 0 and tostring(match_id) or Engine.GetLevelNameShort()
+
+		custom_name = string.format("%s %s [%s]", hero_details, game_state_details, match_details)
 	else
-		name = name .. " - " .. "menu"
+		custom_name = string.format("menu %s", os.date("%y-%m-%d-%H-%M-%S"))
 	end
 
-	name = name .. ".log"
-
-	return name
+	return string.format("debug - %s.log", custom_name)
 end
 
----@param filename string?
----@return boolean
-function SaveDebugLog(filename)
-	filename = filename or GetDebugLogName()
-	log_name:Name(filename)
+---@return nil
+local function save()
+	local debug_file = io.open("./debug.log", "r")
+	if debug_file == nil then
+		Notification({
+			id = "userscript_debug_log_error",
+			duration = 5,
+			timer = 5,
+			primary_text = "Failed to save debug",
+			primary_image = "\u{f317}",
+			secondary_text = "cannot read original debug.log",
+			active = false,
+		})
 
-	filename = Engine.GetCheatDirectory() .. CUSTOM_FILEPATH .. filename
+		return
+	end
 
-	local debug_file = assert(io.open("./debug.log", "r"))
 	local debug_content = debug_file:read("*a")
 	debug_file:close()
 
-	local new_debug_file = io.open(filename, "w")
-	if new_debug_file ~= nil then
-		new_debug_file:write(debug_content)
-		new_debug_file:close()
-	else
-		Log.Write("[debug_log.lua | Debug Log Helper] failed to copy debug! Filepath: " .. tostring(filename))
-		return false
+	local filename = get_filename()
+
+	local file_path = Engine.GetCheatDirectory() .. DIRECTORY .. filename
+
+	local new_debug_file = io.open(file_path, "w")
+	if new_debug_file == nil then
+		Notification({
+			id = "userscript_debug_log_error",
+			duration = 5,
+			timer = 5,
+			primary_text = "Failed to save debug",
+			primary_image = "\u{f317}",
+			secondary_text = "cannot save file",
+			active = false,
+		})
+
+		return
 	end
 
-	return true
+	new_debug_file:write(debug_content)
+	new_debug_file:close()
+
+	Notification({
+		id = "userscript_debug_log_success_" .. tostring(os.clock()),
+		duration = 7,
+		timer = 7,
+		primary_text = "Debug saved",
+		primary_image = "\u{f31c}",
+		secondary_text = filename,
+		active = true,
+	})
 end
 
+local ui = {}
+
+ui.menu = Menu.Create("General", "Debug", "Debug Log Helper")
+ui.menu:Icon("\u{f15c}")
+
+ui.menu_main = ui.menu:Create("Main")
+
+ui.menu_script = ui.menu_main:Create("General")
+
+ui.enable = ui.menu_script:Switch("Enable", false, "\u{f00c}")
+
+ui.auto_save_endgame = ui.menu_script:Switch("Auto Save After Match", false, "\u{e5a2}")
+
+ui.save_bind = ui.menu_script:Bind("Save Bind", Enum.ButtonCode.KEY_NONE, "\u{e1c1}")
+
+ui.save = ui.menu_script:Button("Save", function()
+	save()
+end)
+
+ui.enable:SetCallback(function(widget)
+	local enabled = widget:Get()
+
+	ui.auto_save_endgame:Disabled(not enabled)
+	ui.save_bind:Disabled(not enabled)
+	ui.save:Disabled(not enabled)
+end, true)
+
 return {
-	OnGameRulesStateChange = function(data)
-		if enable:Get() then
-			if auto_save_endgame:Get() then
-				if data.new_state == Enum.GameState.DOTA_GAMERULES_STATE_POST_GAME then
-					SaveDebugLog()
-				end
-			end
+	OnUpdateEx = function()
+		if ui.save_bind:IsPressed() then
+			save()
 		end
 	end,
 
-	OnUpdate = function()
-		if save_bind:IsPressed() then
-			SaveDebugLog()
+	---@param data OnGameRulesStateChangeData
+	OnGameRulesStateChange = function(data)
+		if ui.enable:Get() then
+			if ui.auto_save_endgame:Get() then
+				if data.new_state == Enum.GameState.DOTA_GAMERULES_STATE_POST_GAME then
+					save()
+				end
+			end
 		end
 	end,
 }
