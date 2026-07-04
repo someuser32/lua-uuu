@@ -1,4 +1,5 @@
-local DIRECTORY = "debugs/"
+-- create directory manually if you want to save in different location and do not forget to leave trailing slash
+local DIRECTORY = ""
 
 local GAME_STATE_NAMES = {
 	[Enum.GameState.DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD] = "pre draft",
